@@ -13,6 +13,8 @@ export interface TeamMemberProfile {
   linkedin?: string;
   github?: string;
   email?: string;
+  instagram?: string;
+  phone?: string;
   category: "faculty" | "execom" | "subExecom";
   categoryLabel: string;
 }
@@ -29,6 +31,8 @@ interface RawMember {
   linkedin?: string;
   github?: string;
   email?: string;
+  instagram?: string;
+  phone?: string;
 }
 
 const CATEGORY_LABELS: Record<"faculty" | "execom" | "subExecom", string> = {
@@ -95,6 +99,8 @@ function buildAllMembers(): TeamMemberProfile[] {
           ? raw.github
           : undefined,
         email: raw.email || undefined,
+        instagram: raw.instagram || undefined,
+        phone: raw.phone || undefined,
         category: key,
         categoryLabel: CATEGORY_LABELS[key],
       });
