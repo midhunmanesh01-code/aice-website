@@ -1,81 +1,25 @@
 "use client";
 
+import { useEffect, useSyncExternalStore, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
+import { QRCodeSVG } from "qrcode.react";
+import Navbar from "@/app/components/Navbar";
 import type { TeamMemberProfile } from "@/lib/team-members";
-import ParticleBackground from "./ParticleBackground";
-import HoloCard from "./HoloCard";
+import Lanyard from "./Lanyard";
 import styles from "./MemberProfile.module.css";
 
 /* ──────────────────────────────────────────────────────────
-   SVG Icons (matching reference screenshot with precision)
+   SVG Icons matching Screenshot (37).png
    ────────────────────────────────────────────────────────── */
-
-function GraduationCapIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c3 3 9 3 12 0v-5" />
-    </svg>
-  );
-}
-
-function TeamUsersIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function LayersIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="m12 2 10 5-10 5-10-5z" />
-      <path d="m2 12 10 5 10-5" />
-      <path d="m2 17 10 5 10-5" />
-    </svg>
-  );
-}
 
 function GitHubIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="currentColor"
       aria-hidden="true"
@@ -92,21 +36,19 @@ function GitHubIcon() {
 function LinkedInIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <rect x="2" y="2" width="20" height="20" rx="5" />
-      <path d="M8 11v5" />
-      <path d="M8 8v.01" />
-      <path d="M12 16v-5" />
-      <path d="M16 16v-3a2 2 0 0 0-4 0" />
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+      <rect x="2" y="9" width="4" height="12" />
+      <circle cx="4" cy="4" r="2" />
     </svg>
   );
 }
@@ -114,17 +56,17 @@ function LinkedInIcon() {
 function PhoneIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z" />
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   );
 }
@@ -132,44 +74,47 @@ function PhoneIcon() {
 function MailIcon() {
   return (
     <svg
-      width="20"
-      height="20"
+      width="18"
+      height="18"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3 7 9 6 9-6" />
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
+function ContactDownloadIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
     </svg>
   );
 }
 
 /* ──────────────────────────────────────────────────────────
-   Helper functions
+   Team and ID resolution helpers
    ────────────────────────────────────────────────────────── */
 
-function formatName(name: string): { line1: string; line2: string | null } {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return { line1: parts[0], line2: null };
-  }
-  const lastPart = parts.slice(1).join(" ");
-  // If last part is short initials (like "MS" or "J") and total name is compact, keep on one line
-  if (lastPart.length <= 2 && name.length <= 12) {
-    return { line1: name, line2: null };
-  }
-  return {
-    line1: parts[0],
-    line2: lastPart,
-  };
-}
-
 function resolveTeam(member: TeamMemberProfile): string {
-  // 1. Only Midhun Manesh is in "Web & Tech Team"
   if (
     member.name.toLowerCase().includes("midhun manesh") ||
     member.role.toLowerCase().includes("web & tech")
@@ -177,7 +122,6 @@ function resolveTeam(member: TeamMemberProfile): string {
     return "Web & Tech Team";
   }
 
-  // 2. Sarin MS is in "Web Team" only
   if (
     member.name.toLowerCase().includes("sarin") ||
     member.role.toLowerCase() === "webmaster"
@@ -185,7 +129,6 @@ function resolveTeam(member: TeamMemberProfile): string {
     return "Web Team";
   }
 
-  // 3. Adhi Narayan is in "Tech Team" only
   if (
     member.name.toLowerCase().includes("adhi") ||
     member.role.toLowerCase() === "tech lead"
@@ -193,7 +136,6 @@ function resolveTeam(member: TeamMemberProfile): string {
     return "Tech Team";
   }
 
-  // 4. If member has an explicit team in members.json that isn't generic "Executive Committee", use it
   if (
     member.team &&
     member.team.toLowerCase() !== "executive committee" &&
@@ -202,7 +144,6 @@ function resolveTeam(member: TeamMemberProfile): string {
     return member.team;
   }
 
-  // 5. Execom functional teams strictly matching Execom section categories
   const role = member.role.toLowerCase();
   if (role.includes("creative")) return "Creative Team";
   if (role.includes("content")) return "Content Team";
@@ -214,321 +155,373 @@ function resolveTeam(member: TeamMemberProfile): string {
   if (role.includes("student lead") || role.includes("lead")) return "Lead Team";
 
   if (member.category === "execom") return "Core Team";
-  if (member.category === "faculty") return "Advisory Board";
+  if (member.category === "faculty") return "Faculty Advisor";
 
-  return "AICE Team";
+  return member.categoryLabel || "AICE Team";
 }
 
-function formatDivision(division: string) {
-  if (division.toLowerCase().includes("sub-executive")) {
-    return "Sub-Executive\nCommittee";
+function formatMemberId(member: TeamMemberProfile): string {
+  const num = member.id.replace(/[^0-9]/g, "").padStart(2, "0");
+  if (member.id.startsWith("fac")) {
+    return `[AICE-26-FAC-${num}]`;
   }
-  if (division.toLowerCase().includes("executive")) {
-    return "Executive\nCommittee";
+  if (member.id.startsWith("sub")) {
+    return `[AICE-26-SUB-${num}]`;
   }
-  if (division.toLowerCase().includes("faculty")) {
-    return "Faculty\nAdvisor";
-  }
-  return division;
+  return `[AICE-26-${num}]`;
 }
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+function generateVCard(member: TeamMemberProfile): string {
+  const parts = member.name.trim().split(/\s+/);
+  const lastName = parts.length > 1 ? parts[parts.length - 1] : "";
+  const firstName = parts.length > 1 ? parts.slice(0, -1).join(" ") : parts[0];
+
+  const lines = [
+    "BEGIN:VCARD",
+    "VERSION:3.0",
+    `FN:${member.name}`,
+    `N:${lastName};${firstName};;;`,
+    `TITLE:${member.role}`,
+    "ORG:AICE - Artificial Intelligence Community for Excellence;College of Engineering Chengannur",
+  ];
+
+  const email = member.email || `${member.slug}@ceconline.edu`;
+  lines.push(`EMAIL;TYPE=INTERNET,WORK:${email}`);
+
+  const phone = member.phone || "+91 00000 00000";
+  lines.push(`TEL;TYPE=CELL,VOICE:${phone}`);
+
+  const linkedin = member.linkedin || `https://linkedin.com/in/${member.slug}`;
+  lines.push(`URL;TYPE=LinkedIn:${linkedin}`);
+
+  const github = member.github || `https://github.com/${member.slug}`;
+  lines.push(`URL;TYPE=GitHub:${github}`);
+
+  if (member.bio) {
+    lines.push(`NOTE:${member.bio}`);
+  }
+
+  lines.push("END:VCARD");
+  return lines.join("\r\n");
+}
+
+/* ──────────────────────────────────────────────────────────
+   Member Profile Component
+   ────────────────────────────────────────────────────────── */
+
+interface MemberProfileProps {
+  member: TeamMemberProfile;
+  allMembers: TeamMemberProfile[];
 }
 
 export default function MemberProfile({
   member,
-}: {
-  member: TeamMemberProfile;
-}) {
+  allMembers,
+}: MemberProfileProps) {
+  const router = useRouter();
+  const shouldReduceMotion = useReducedMotion();
 
-  const { line1, line2 } = formatName(member.name);
-  const divisionText = formatDivision(member.categoryLabel);
-  const teamText = resolveTeam(member);
+  // Front image for Lanyard (uses official ID card sample for Sarin MS or member photo)
+  const cardFrontImage =
+    member.slug === "sarin-ms"
+      ? "/assets/official-id-sample.jpg"
+      : (member.image || "/assets/placeholder-avatar.svg");
 
-  // Personal social & contact links (with individual placeholders if not provided)
-  const githubUrl = member.github || "https://github.com";
-  const linkedinUrl = member.linkedin || "https://linkedin.com";
-  const phoneUrl = member.phone ? `tel:${member.phone}` : "tel:+910000000000";
-  const emailUrl = member.email ? `mailto:${member.email}` : "mailto:placeholder@ceconline.edu";
+  // Subscribe to client-side window URL cleanly without cascading renders
+  const currentHref = useSyncExternalStore(
+    (onStoreChange) => {
+      window.addEventListener("popstate", onStoreChange);
+      return () => window.removeEventListener("popstate", onStoreChange);
+    },
+    () => window.location.href,
+    () => "",
+  );
+
+  // Compute previous and next member
+  const currentIndex = allMembers.findIndex((m) => m.slug === member.slug);
+  const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+  const totalMembers = allMembers.length || 1;
+
+  const prevMember = allMembers[(safeIndex - 1 + totalMembers) % totalMembers];
+  const nextMember = allMembers[(safeIndex + 1) % totalMembers];
+
+
+
+  // Keyboard navigation for left / right arrow keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target as HTMLElement)?.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        router.push(`/team26/${prevMember.slug}`);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        router.push(`/team26/${nextMember.slug}`);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router, prevMember.slug, nextMember.slug]);
+
+  // vCard download handler
+  const handleSaveContact = useCallback(() => {
+    const vcard = generateVCard(member);
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${member.slug}.vcf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [member]);
+
+  // Framer motion entrance stagger
+  const createFadeUp = (index: number) => {
+    if (shouldReduceMotion) {
+      return {
+        initial: { opacity: 1, y: 0 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0 },
+      };
+    }
+
+    return {
+      initial: { opacity: 0, y: 8 },
+      animate: { opacity: 1, y: 0 },
+      transition: {
+        delay: index * 0.02,
+        duration: 0.28,
+        ease: "easeOut" as const,
+      },
+    };
+  };
+
+  // Words split — each word is rendered as a strictly non-breaking unit
+  const words = member.name.trim().split(/\s+/);
+
+  const qrValue =
+    currentHref || `https://aice.ceconline.edu/team26/${member.slug}`;
+
+  const teamValue = resolveTeam(member);
+  const formattedId = formatMemberId(member);
+
+  // Fallback URLs for placeholders as requested
+  const githubUrl =
+    member.github || `https://github.com/${member.slug}`;
+  const linkedinUrl =
+    member.linkedin || `https://linkedin.com/in/${member.slug}`;
+  const phoneUrl = member.phone
+    ? `tel:${member.phone}`
+    : "tel:+910000000000";
+  const emailUrl = member.email
+    ? `mailto:${member.email}`
+    : `mailto:${member.slug}@ceconline.edu`;
 
   return (
     <main className={styles.page}>
-      <ParticleBackground />
+      {/* ── Top Subtle Hairline Laser ── */}
+      <div className={styles.topLightBeam} aria-hidden="true" />
 
-      {/* ──────────────────────────────────────────────────
-          1. TOP NAVIGATION BAR
-          ────────────────────────────────────────────────── */}
-      <header className={styles.topHeader}>
-        <Link href="/" className={styles.brandGroup} aria-label="AICE Home">
-          <Image
-            src="/logos/aice_logo.png"
-            alt="AICE Logo"
-            width={32}
-            height={32}
-            className={styles.brandLogo}
-            priority
-          />
-          <span className={styles.brandName}>AICE</span>
-          <span className={styles.headerDivider} aria-hidden="true" />
-          <div className={styles.headerSubtitle}>
-            <span>AI INNOVATION COMMUNITY</span>
-            <span>FOR EXCELLENCE</span>
-          </div>
-        </Link>
+      {/* ── Visual Ambient Atmosphere with Tasteful Red Depth ── */}
+      <div className={styles.glowCard} aria-hidden="true" />
+      <div className={styles.glowTopRight} aria-hidden="true" />
+      <div className={styles.ambientVignette} aria-hidden="true" />
 
-        <div className={styles.headerRight}>
-          <span className={styles.teamTag}>TEAM 2026</span>
-          <span className={styles.headerDivider} aria-hidden="true" />
-          <Link href="/#execom" className={styles.directoryLink}>
-            <span>MEMBER DIRECTORY</span>
-            <span className={styles.directoryArrow} aria-hidden="true">
-              {"\u2197"}
-            </span>
-          </Link>
-        </div>
-      </header>
+      {/* ── Official Site Navbar ── */}
+      <Navbar />
 
-      {/* ──────────────────────────────────────────────────
-          2. MAIN STAGE: Stepper + Portrait + Member Details
-          ────────────────────────────────────────────────── */}
-      <section className={styles.mainStage} aria-label="Member Profile Information">
+      {/* ── 2. Main Stage (Lanyard Card on Left, Details on Right) ── */}
+      <section
+        className={styles.mainStage}
+        aria-label="Member Profile Information"
+      >
+        {/* stageGrid is full-width — left column is full-bleed lanyard, right is padded details */}
         <div className={styles.stageGrid}>
-          {/* ── Profile Columns: Card on Left + Info on Right ── */}
-          <div className={styles.profileColumns}>
-            {/* ── Cyberpunk Frame Card (Center-Left) ── */}
-            <div className={styles.portraitColumn}>
-              {/* Glowing Red Atmosphere behind card */}
-              <div className={styles.frameGlowAura} aria-hidden="true" />
+          {/* ── Left Column: Lanyard — fills full height, seamlessly sunk into background ── */}
+          <div className={styles.photoColumn}>
+            <div className={styles.cardBackdropAura} aria-hidden="true" />
+            <div className={styles.cardGroundShadow} aria-hidden="true" />
+            <motion.div
+              {...createFadeUp(1)}
+              className={styles.lanyardWrapper}
+              aria-label={`ID card for ${member.name}`}
+            >
+              <Lanyard
+                frontImage={cardFrontImage}
+                backImage={cardFrontImage}
+                imageFit="cover"
+                cardColor="#f8f8fa"
+                orientation="portrait"
+                finish="glossy"
+                cornerRadius={0.3}
+                size={0.62}
+                anchor="center"
+                strapLength={0.45}
+                strapColor="#111111"
+                strapWidth={0.65}
+                metal="silver"
+                gravity={1}
+                damping={0.5}
+                elasticity={0.5}
+                breeze={0.5}
+                interactive={true}
+                intro={true}
+              />
+            </motion.div>
+          </div>
 
-              {/* 3D Interactive Holographic Foil Card (React Bits) */}
-              <HoloCard
-                image={member.image}
-                alt={`Portrait of ${member.name}`}
-                width={360}
-                aspectRatio={360 / 482}
-                radius={0}
-                intensity={0}
-                glare={0}
-                shadow={false}
-                tiltMax={15}
-                hoverScale={1.04}
-                frame={0}
-                edgeSparkle={0}
-                className={styles.holoCardWrapper}
-              >
-                {/* Cyberpunk Futuristic Border SVG with Neon Red Accents (Tilts in 3D) */}
-                <svg
-                  className={styles.frameSvgOverlay}
-                  viewBox="0 0 360 482"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <defs>
-                    <filter
-                      id="cardNeonRedGlow"
-                      x="-40%"
-                      y="-40%"
-                      width="180%"
-                      height="180%"
-                    >
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1" />
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur2" />
-                      <feMerge>
-                        <feMergeNode in="blur2" />
-                        <feMergeNode in="blur1" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-
-                  {/* Base subtle stroke perimeter */}
-                  <path
-                    d="M 34 0 L 252 0 L 264 12 L 342 12 L 360 26 L 360 450 L 332 482 L 170 482 L 160 472 L 102 472 L 92 482 L 24 482 L 0 458 L 0 275 L 6 268 L 6 235 L 0 228 L 0 34 Z"
-                    stroke="rgba(255, 255, 255, 0.25)"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Glowing Neon Red Accent: Top-Left Segment */}
-                  <path
-                    d="M 0 75 L 0 34 L 34 0 L 120 0"
-                    stroke="#ff2424"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter="url(#cardNeonRedGlow)"
-                  />
-                  <path
-                    d="M 0 75 L 0 34 L 34 0 L 120 0"
-                    stroke="#ffffff"
-                    strokeWidth="0.8"
-                    strokeOpacity="0.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Glowing Neon Red Accent: Bottom-Right Segment */}
-                  <path
-                    d="M 360 385 L 360 450 L 332 482 L 240 482"
-                    stroke="#ff2424"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter="url(#cardNeonRedGlow)"
-                  />
-                  <path
-                    d="M 360 385 L 360 450 L 332 482 L 240 482"
-                    stroke="#ffffff"
-                    strokeWidth="0.8"
-                    strokeOpacity="0.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-
-                {/* Top-left watermark printed on card face (Tilts in 3D) */}
-                <div className={styles.cardWatermark} aria-hidden="true">
-                  <Image
-                    src="/logos/aice_logo.png"
-                    alt=""
-                    width={18}
-                    height={18}
-                    className={styles.watermarkLogo}
-                  />
-                  <div className={styles.watermarkText}>
-                    <span>AICE</span>
-                    <span>TEAM 2026</span>
-                  </div>
+          {/* ── Right Column: Details — uses container-like padding ── */}
+          <div className={styles.detailsColumn}>
+              {/* Tag Row (above the name) */}
+              <div className={styles.tagRow}>
+                <div className={styles.tagRole}>
+                  <span className={styles.tagDot} aria-hidden="true" />
+                  <span>{member.role}</span>
                 </div>
-              </HoloCard>
-            </div>
-
-            {/* ── Member Details (Center-Right) ── */}
-            <div className={styles.infoColumn}>
-              {/* Breadcrumb line */}
-              <div className={styles.breadcrumbRow}>
-                <span className={styles.breadcrumbText}>AICE / TEAM 2026</span>
-                <span className={styles.breadcrumbPill} aria-hidden="true" />
+                <span className={styles.tagOrg}>AICE / TEAM 2026</span>
               </div>
 
-              {/* Bold Name with Red Dot */}
+              {/* Name Heading (Strictly whole words; last word has gradient text) */}
               <h1 className={styles.memberName} id="member-heading">
-                <span className={styles.nameLine}>
-                  {line1}
-                  {!line2 && <span className={styles.redSquarePeriod} aria-hidden="true" />}
-                </span>
-                {line2 && (
-                  <span className={styles.nameLine}>
-                    {line2}
-                    <span className={styles.redSquarePeriod} aria-hidden="true" />
-                  </span>
-                )}
+                {words.map((word, idx) => {
+                  const isLast = idx === words.length - 1;
+                  return (
+                    <span key={idx}>
+                      <span
+                        className={`${styles.nameWord} ${
+                          isLast ? styles.gradientWord : ""
+                        }`}
+                      >
+                        {word}
+                      </span>
+                      {idx < words.length - 1 ? " " : ""}
+                    </span>
+                  );
+                })}
               </h1>
 
-              {/* Role & Organization */}
-              <div className={styles.roleContainer}>
-                <div className={styles.roleRedBar} aria-hidden="true" />
-                <div className={styles.roleContent}>
-                  <div className={styles.roleTitle}>{member.role}</div>
-                  <div className={styles.organization}>
-                    AICE – College of Engineering Chengannur
-                  </div>
+              {/* College & Optional Bio Line */}
+              <p className={styles.collegeBio}>
+                <span className={styles.collegeName}>
+                  AICE – College of Engineering Chengannur.
+                </span>
+                {member.bio && (
+                  <span className={styles.bioText}> {member.bio}</span>
+                )}
+              </p>
+
+              {/* Spec List matching Screenshot (44).png */}
+              <div className={styles.specList}>
+                <div className={styles.specRow}>
+                  <span className={styles.specLabel}>Batch</span>
+                  <span className={styles.specValue}>{member.dept}</span>
+                  <span className={styles.specIndex}>01</span>
+                </div>
+                <div className={styles.specRow}>
+                  <span className={styles.specLabel}>Team</span>
+                  <span className={styles.specValue}>{teamValue}</span>
+                  <span className={styles.specIndex}>02</span>
+                </div>
+                <div className={styles.specRow}>
+                  <span className={styles.specLabel}>Division</span>
+                  <span className={styles.specValue}>{member.categoryLabel}</span>
+                  <span className={styles.specIndex}>03</span>
                 </div>
               </div>
 
-              {/* Horizontal Divider */}
-              <div className={styles.infoDivider} aria-hidden="true" />
+              {/* Action Row */}
+              <div className={styles.actionRow}>
+                {/* Primary Red Pill: Save Contact (.vcf) */}
+                <button
+                  type="button"
+                  onClick={handleSaveContact}
+                  className={styles.saveContactButton}
+                >
+                  <ContactDownloadIcon />
+                  <span>Save contact</span>
+                </button>
 
-              {/* 3-Column Info Grid */}
-              <div className={styles.metaGrid}>
-                {/* Col 1: Department */}
-                <div className={`${styles.metaCol} ${styles.metaColBorder}`}>
-                  <span className={styles.metaIcon}>
-                    <GraduationCapIcon />
-                  </span>
-                  <div className={styles.metaInfo}>
-                    <span className={styles.metaLabel}>Department</span>
-                    <span className={styles.metaValue}>{member.dept}</span>
-                  </div>
-                </div>
+                {/* Social Button Group */}
+                <div className={styles.socialButtonGroup}>
+                  {/* GitHub */}
+                  <a
+                    href={githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialPillButton}
+                    aria-label={`${member.name} on GitHub`}
+                  >
+                    <GitHubIcon />
+                    <span>GitHub</span>
+                  </a>
 
-                {/* Col 2: Team */}
-                <div className={`${styles.metaCol} ${styles.metaColBorder}`}>
-                  <span className={styles.metaIcon}>
-                    <TeamUsersIcon />
-                  </span>
-                  <div className={styles.metaInfo}>
-                    <span className={styles.metaLabel}>Team</span>
-                    <span className={styles.metaValue}>{teamText}</span>
-                  </div>
-                </div>
+                  {/* LinkedIn */}
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialPillButton}
+                    aria-label={`${member.name} on LinkedIn`}
+                  >
+                    <LinkedInIcon />
+                    <span>LinkedIn</span>
+                  </a>
 
-                {/* Col 3: Division */}
-                <div className={styles.metaCol}>
-                  <span className={styles.metaIcon}>
-                    <LayersIcon />
-                  </span>
-                  <div className={styles.metaInfo}>
-                    <span className={styles.metaLabel}>Division</span>
-                    <span className={styles.metaValue}>{divisionText}</span>
-                  </div>
+                  {/* Call (tel:) */}
+                  <a
+                    href={phoneUrl}
+                    className={styles.roundIconButton}
+                    aria-label={`Call ${member.name}`}
+                  >
+                    <PhoneIcon />
+                  </a>
+
+                  {/* Email (mailto:) */}
+                  <a
+                    href={emailUrl}
+                    className={styles.roundIconButton}
+                    aria-label={`Email ${member.name}`}
+                  >
+                    <MailIcon />
+                  </a>
                 </div>
               </div>
-
-              {/* Social Links Row */}
-              <nav
-                className={styles.socialsRow}
-                aria-label={`${member.name} social and contact profiles`}
-              >
-                <a
-                  href={githubUrl}
-                  className={styles.socialBtn}
-                  aria-label={`${member.name} GitHub profile`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <GitHubIcon />
-                </a>
-
-                <a
-                  href={linkedinUrl}
-                  className={styles.socialBtn}
-                  aria-label={`${member.name} LinkedIn profile`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <LinkedInIcon />
-                </a>
-
-                <a
-                  href={phoneUrl}
-                  className={styles.socialBtn}
-                  aria-label={`Call ${member.name}`}
-                >
-                  <PhoneIcon />
-                </a>
-
-                <a
-                  href={emailUrl}
-                  className={styles.socialBtn}
-                  aria-label={`Email ${member.name}`}
-                >
-                  <MailIcon />
-                </a>
-              </nav>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
+      {/* ── 4. Footer Bar ── */}
+      <motion.footer {...createFadeUp(7)} className={styles.footerBar}>
+        <div className={styles.container}>
+          <nav className={styles.footerNav} aria-label="Member Navigation">
+            <Link
+              href={`/team26/${prevMember.slug}`}
+              className={styles.memberNavButton}
+              aria-label={`Previous member: ${prevMember.name}`}
+            >
+              {"←"} Previous member
+            </Link>
+
+            <Link
+              href={`/team26/${nextMember.slug}`}
+              className={styles.memberNavButton}
+              aria-label={`Next member: ${nextMember.name}`}
+            >
+              Next member {"→"}
+            </Link>
+          </nav>
+        </div>
+      </motion.footer>
     </main>
   );
 }

@@ -1,13 +1,45 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getMemberBySlug, getAllMemberSlugs } from "@/lib/team-members";
+import { Syne, Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import {
+  getMemberBySlug,
+  getAllMemberSlugs,
+  getAllMembers,
+} from "@/lib/team-members";
 import MemberProfile from "./MemberProfile";
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono-jb",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>;
 }
 
-/** Only pre-rendered slugs are valid; all others trigger the branded 404. */
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
@@ -21,7 +53,7 @@ export async function generateMetadata({
   const member = getMemberBySlug(slug);
 
   if (!member) {
-    return { title: "Member Not Found" };
+    return { title: "Member Not Found | AICE CEC" };
   }
 
   const title = `${member.name} — ${member.role}`;
@@ -46,7 +78,7 @@ export async function generateMetadata({
       ],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title: `${title} | AICE CEC`,
       description,
       images: [member.image],
@@ -68,5 +100,13 @@ export default async function MemberProfilePage({
     notFound();
   }
 
-  return <MemberProfile member={member} />;
+  const allMembers = getAllMembers();
+
+  return (
+    <div
+      className={`${syne.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable}`}
+    >
+      <MemberProfile member={member} allMembers={allMembers} />
+    </div>
+  );
 }

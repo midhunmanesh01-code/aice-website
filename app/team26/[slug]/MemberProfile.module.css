@@ -1,20 +1,16 @@
-/* ============================================================
-   MemberProfile.module.css — Cyberpunk HUD Team 2026 Member Profile
-   Pixel-perfect match to AICE Team 2026 Member Profile design
-   ============================================================ */
-
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800;900&display=swap");
+/* ──────────────────────────────────────────────────────────
+   AICE Team 2026 Member Profile — Pixel-Matched to Spec & Reference
+   ────────────────────────────────────────────────────────── */
 
 .page {
-  --bg: #07070a;
-  --red-neon: #ff2020;
-  --red-glow: rgba(255, 32, 32, 0.85);
-  --text-main: #ffffff;
-  --text-sec: #8e8e99;
-  --text-muted: #71717a;
-  --text-dim: #52525b;
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-bright: rgba(255, 255, 255, 0.2);
+  --bg: var(--background, #09090b);
+  --text-main: #f4f4f5;
+  --text-muted: #8e8e93;
+  --red-accent: #ff3b3b;
+  --red-soft: #ff8a8a;
+  --card-surface: rgba(255, 255, 255, 0.035);
+  --card-border: 1px solid rgba(255, 255, 255, 0.08);
+  --focus-ring: 2px solid #ff3b3b;
 
   position: relative;
   width: 100%;
@@ -26,583 +22,548 @@
   flex-direction: column;
   justify-content: space-between;
   overflow-x: hidden;
-  font-family: "Space Grotesk", var(--font-geist-sans), sans-serif;
+  font-family: var(--font-space-grotesk), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Base solid zinc-950 to blend seamlessly with main site */
+  background-color: var(--bg);
+  padding-top: var(--nav-height, 72px);
 }
 
 /* ──────────────────────────────────────────────────────────
-   1. TOP NAVIGATION BAR
+   0. MINIMAL & VISUALLY APPEALING TECH BACKGROUND
+      Dual-frequency blueprint block grid, focused crimson card
+      studio aura, top laser beam, and balanced ambient depth
    ────────────────────────────────────────────────────────── */
-.topHeader {
-  position: relative;
-  z-index: 20;
+.topLightBeam {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.12) 15%,
+    rgba(229, 38, 45, 0.55) 45%,
+    rgba(255, 74, 79, 0.8) 50%,
+    rgba(229, 38, 45, 0.55) 55%,
+    rgba(255, 255, 255, 0.12) 85%,
+    transparent 100%
+  );
+  z-index: 40;
+  pointer-events: none;
+}
+
+
+/* Focused Crimson Studio Glow — sinks the 3D card into the space with rich depth */
+.glowCard {
+  pointer-events: none;
+  position: fixed;
+  left: 28%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: clamp(420px, 46vw, 680px);
+  height: clamp(460px, 52vw, 740px);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(229, 38, 45, 0.16) 0%,
+    rgba(229, 38, 45, 0.07) 42%,
+    rgba(229, 38, 45, 0.02) 65%,
+    transparent 78%
+  );
+  filter: blur(80px);
+  z-index: 0;
+}
+
+/* Soft Top-Right Red Accent — balances the composition diagonally */
+.glowTopRight {
+  pointer-events: none;
+  position: fixed;
+  right: -6rem;
+  top: -6rem;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(229, 38, 45, 0.08) 0%,
+    rgba(229, 38, 45, 0.02) 50%,
+    transparent 70%
+  );
+  filter: blur(100px);
+  z-index: 0;
+}
+
+.ambientVignette {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 90% 75% at 50% 35%,
+    transparent 45%,
+    rgba(9, 9, 11, 0.45) 85%,
+    rgba(9, 9, 11, 0.8) 100%
+  );
+  z-index: 0;
+}
+
+/* ── Container Layout ── */
+.container {
   width: 100%;
-  padding: 1.75rem clamp(1.5rem, 4.5vw, 4.5rem) 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  animation: hudHeaderIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes hudHeaderIn {
-  from {
-    opacity: 0;
-    transform: translateY(-16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.brandGroup {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.1rem;
-  text-decoration: none;
-}
-
-.brandLogo {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  filter: brightness(1.15);
-}
-
-.brandName {
-  font-family: "Syne", var(--font-heading), sans-serif;
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--text-main);
-  line-height: 1;
-}
-
-.headerDivider {
-  display: inline-block;
-  width: 1px;
-  height: 26px;
-  background: var(--border-subtle);
-}
-
-.headerSubtitle {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-family: "Space Grotesk", monospace;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  color: var(--text-muted);
-  line-height: 1.35;
-  text-transform: uppercase;
-}
-
-.headerRight {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.teamTag {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  color: var(--text-sec);
-  text-transform: uppercase;
-}
-
-.directoryLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--text-sec);
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.directoryLink:hover {
-  color: var(--red-neon);
-}
-
-.directoryLink:hover .directoryArrow {
-  transform: translate(2px, -2px);
-}
-
-.directoryArrow {
-  display: inline-block;
-  transition: transform 0.2s ease;
-  font-size: 0.85rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+  position: relative;
+  z-index: 10;
 }
 
 /* ──────────────────────────────────────────────────────────
-   2. MAIN CONTENT STAGE
+   2. MAIN STAGE (TWO COLUMNS)
    ────────────────────────────────────────────────────────── */
 .mainStage {
   position: relative;
   z-index: 10;
   flex: 1;
   display: flex;
-  align-items: center;
-  padding: 1.5rem clamp(1.5rem, 4.5vw, 4.5rem) calc(1.5rem + 80px);
+  align-items: stretch;
+  padding: 0;
+  width: 100%;
+  min-height: calc(100svh - var(--nav-height, 72px));
 }
 
 .stageGrid {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
   display: grid;
-  grid-template-columns: 105px 1fr;
-  align-items: center;
-  gap: clamp(2rem, 5vw, 6rem);
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: stretch;
+  width: 100%;
+  /* Left column right-border as a subtle divider */
+  /* (handled via photoColumn border-right below) */
 }
 
-/* ──────────────────────────────────────────────────────────
-   3. TWO-COLUMN HERO STAGE (Card on Left + Info on Right)
-   ────────────────────────────────────────────────────────── */
-.profileColumns {
-  grid-column: 2;
-  display: grid;
-  grid-template-columns: minmax(300px, 390px) 1fr;
-  align-items: center;
-  gap: clamp(2rem, 5vw, 5.5rem);
-  width: 100%;
-}
-
-/* ──────────────────────────────────────────────────────────
-   5. CYBERPUNK MEMBER PORTRAIT FRAME (Left Column)
-   ────────────────────────────────────────────────────────── */
-.portraitColumn {
+/* ── Photo Column ── */
+.photoColumn {
   position: relative;
   width: 100%;
-  max-width: 390px;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: hudCardIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  min-height: calc(100svh - var(--nav-height, 72px));
+  overflow: hidden;
 }
 
-@keyframes hudCardIn {
-  from {
-    opacity: 0;
-    transform: scale(0.93);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* HoloCard 3D Interactive Foil Container */
-.holoCardWrapper {
-  position: relative;
-  z-index: 2;
-  border-radius: 0;
-}
-
-.holoCardWrapper :global(.holo-card__face) {
-  border-radius: 0;
-  clip-path: polygon(
-    9.44% 0%,
-    70% 0%,
-    73.33% 2.49%,
-    95% 2.49%,
-    100% 5.39%,
-    100% 93.36%,
-    92.22% 100%,
-    47.22% 100%,
-    44.44% 97.93%,
-    28.33% 97.93%,
-    25.56% 100%,
-    6.67% 100%,
-    0% 95.02%,
-    0% 57.05%,
-    1.67% 55.6%,
-    1.67% 48.76%,
-    0% 47.3%,
-    0% 7.05%
-  );
-}
-
-/* Outer neon glow container */
-.frameGlowAura {
+/* Dedicated soft stage backlight behind the hanging ID card to sink it naturally into the scene */
+.cardBackdropAura {
   position: absolute;
-  inset: -22px;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(280px, 34vw, 460px);
+  height: clamp(380px, 45vw, 580px);
+  border-radius: 50%;
   background: radial-gradient(
-    circle at 10% 10%,
-    rgba(255, 32, 32, 0.45) 0%,
-    transparent 50%
-  ),
-  radial-gradient(
-    circle at 90% 90%,
-    rgba(255, 32, 32, 0.5) 0%,
-    transparent 55%
+    ellipse at center,
+    rgba(255, 255, 255, 0.065) 0%,
+    rgba(229, 38, 45, 0.04) 42%,
+    transparent 72%
   );
-  filter: blur(28px);
+  filter: blur(36px);
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 
-/* Top-Left Watermark Branding on Card */
-.cardWatermark {
+/* Subtle contact ground shadow beneath the hanging 3D card */
+.cardGroundShadow {
   position: absolute;
-  top: 26px;
-  left: 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  z-index: 4;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, transparent 72%);
+  filter: blur(14px);
   pointer-events: none;
-  opacity: 0.72;
+  z-index: 0;
 }
 
-.watermarkLogo {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  filter: brightness(1.2);
-}
-
-.watermarkText {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  font-family: "Space Grotesk", monospace;
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: #d4d4d8;
-  line-height: 1.25;
-}
-
-/* SVG Neon Cyberpunk Outline Overlay */
-.frameSvgOverlay {
+/* Lanyard wrapper — fills the entire left column, no box */
+.lanyardWrapper {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  pointer-events: none;
-  z-index: 5;
-  overflow: visible;
 }
 
 /* ──────────────────────────────────────────────────────────
-   6. MEMBER DETAILS (Right Column)
+   3. DETAILS COLUMN
    ────────────────────────────────────────────────────────── */
-.infoColumn {
+.detailsColumn {
   display: flex;
   flex-direction: column;
+  gap: 20px;
   justify-content: center;
-  min-width: 0;
-  max-width: 650px;
-  animation: hudInfoIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+  padding: clamp(40px, 6vh, 80px) clamp(32px, 5vw, 72px);
 }
 
-@keyframes hudInfoIn {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Breadcrumb */
-.breadcrumbRow {
+/* ── Tag Row (above the name) ── */
+.tagRow {
   display: flex;
   align-items: center;
-  gap: 1.1rem;
-  margin-bottom: 0.85rem;
-}
-
-.breadcrumbText {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  color: #71717a;
+  gap: 14px;
+  margin-bottom: 26px;
+  font-family: var(--font-mono-jb), monospace;
+  font-size: 11px;
   text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.breadcrumbPill {
-  display: inline-block;
-  width: 34px;
-  height: 4px;
-  background: var(--red-neon);
-  border-radius: 2px;
-  box-shadow: 0 0 10px var(--red-neon), 0 0 20px var(--red-glow);
-}
-
-/* Huge Bold Member Name */
-.memberName {
-  margin: 0 0 1.2rem;
-  font-family: "Syne", var(--font-heading), "Plus Jakarta Sans", sans-serif;
-  font-size: clamp(2.8rem, 5.2vw, 4.6rem);
-  font-weight: 900;
-  line-height: 0.94;
-  letter-spacing: -0.035em;
-  color: var(--text-main);
-  text-transform: none;
-}
-
-.nameLine {
-  display: block;
-}
-
-.redSquarePeriod {
-  display: inline-block;
-  width: clamp(12px, 1.2vw, 15px);
-  height: clamp(12px, 1.2vw, 15px);
-  background: var(--red-neon);
-  margin-left: 0.15em;
-  vertical-align: baseline;
-  box-shadow: 0 0 12px var(--red-neon);
-  border-radius: 1px;
-}
-
-/* Role & Organization */
-.roleContainer {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.8rem;
-}
-
-.roleRedBar {
-  width: 3.5px;
-  height: 26px;
-  background: var(--red-neon);
-  border-radius: 2px;
-  box-shadow: 0 0 10px var(--red-neon);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.roleContent {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.roleTitle {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.organization {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: #71717a;
-  letter-spacing: 0.02em;
-}
-
-/* Divider Line */
-.infoDivider {
-  width: 100%;
-  height: 1px;
-  background: var(--border-subtle);
-  margin-bottom: 1.8rem;
-}
-
-/* 3-Column Meta Grid */
-.metaGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.25fr;
-  align-items: center;
-  margin-bottom: 2.2rem;
-  width: 100%;
-}
-
-.metaCol {
+.tagRole {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.2rem 1.2rem;
-}
-
-.metaCol:first-child {
-  padding-left: 0;
-}
-
-.metaColBorder {
-  border-right: 1px solid var(--border-subtle);
-}
-
-.metaIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: #a1a1aa;
-  flex-shrink: 0;
-}
-
-.metaInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.metaLabel {
-  font-family: "Space Grotesk", sans-serif;
-  font-size: 0.68rem;
+  gap: 8px;
   font-weight: 500;
-  color: #71717a;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  color: #ff4a4f;
 }
 
-.metaValue {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
+.tagDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background-color: #e5262d;
+  flex-shrink: 0;
+}
+
+.tagOrg {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Member Name Heading (Strictly Non-Breaking Words) ── */
+.memberName {
+  font-family: var(--font-syne), sans-serif;
+  font-weight: 800;
+  font-size: clamp(38px, 5.2vw, 76px);
+  line-height: 1.0;
+  letter-spacing: -0.025em;
   color: var(--text-main);
-  line-height: 1.25;
-  white-space: pre-line;
+  margin: 0;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
 }
 
-/* Social Buttons Row */
-.socialsRow {
+.nameWord {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.gradientWord {
+  background: linear-gradient(135deg, #ffffff 20%, #ff4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* ── College & Optional Bio Line ── */
+.collegeBio {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.collegeName {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.bioText {
+  color: rgba(244, 244, 245, 0.85);
+  font-style: normal;
+}
+
+/* ── Spec List (Pixel-Matched to Screenshot (44).png) ── */
+.specList {
+  width: 100%;
+  margin-top: 40px;
+  margin-bottom: 36px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.specRow {
+  display: grid;
+  grid-template-columns: 170px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 19px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.specLabel {
+  font-family: var(--font-mono-jb), monospace;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.specValue {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.specIndex {
+  font-family: var(--font-mono-jb), monospace;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.25);
+  text-align: right;
+}
+
+/* ── Action Row ── */
+.actionRow {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
-.socialBtn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-  display: flex;
+.saveContactButton {
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 9999px;
+  background-color: var(--red-accent);
+  color: #ffffff;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 6px 20px -4px rgba(255, 59, 59, 0.4);
+}
+
+.saveContactButton:hover {
+  background-color: #e02828;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -4px rgba(255, 59, 59, 0.55);
+}
+
+.saveContactButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.socialPillButton {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 9999px;
+  background-color: var(--card-surface);
+  border: var(--card-border);
+  color: var(--text-main);
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease, color 200ms ease;
+}
+
+.socialPillButton:hover {
+  border-color: var(--red-accent);
+  background-color: rgba(255, 59, 59, 0.08);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.socialPillButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.roundIconButton {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: var(--card-surface);
+  border: var(--card-border);
+  color: var(--text-main);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-sec);
   text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-  outline: none;
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease, color 200ms ease;
 }
 
-.socialBtn:hover {
-  color: var(--text-main);
-  background: rgba(255, 32, 32, 0.08);
-  border-color: var(--red-neon);
-  box-shadow: 0 4px 18px rgba(255, 32, 32, 0.38);
-  transform: translateY(-2px);
+.roundIconButton:hover {
+  border-color: var(--red-accent);
+  background-color: rgba(255, 59, 59, 0.08);
+  color: var(--red-accent);
+  transform: translateY(-1px);
 }
 
-.socialBtn:focus-visible {
-  border-color: var(--red-neon);
-  box-shadow: 0 0 0 2px var(--red-neon);
+.roundIconButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.socialButtonGroup {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* ──────────────────────────────────────────────────────────
-   7. RESPONSIVE LAYOUTS
+   4. FOOTER BAR
    ────────────────────────────────────────────────────────── */
+.footerBar {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px 0;
+  margin-top: auto;
+}
 
-@media (max-width: 1180px) {
+.footerNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.memberNavButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 200ms ease, background-color 200ms ease;
+}
+
+.memberNavButton:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.memberNavButton:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   5. RESPONSIVENESS
+   ────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
   .mainStage {
-    padding-bottom: 2rem;
+    min-height: unset;
   }
 
   .stageGrid {
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: 0;
   }
 
-  .profileColumns {
-    grid-column: 1;
-    grid-template-columns: 1fr;
-    justify-items: center;
+  .photoColumn {
+    position: relative;
+    min-height: 520px;
+    height: 56vw;
+    max-height: 600px;
+  }
+
+  .lanyardWrapper {
+    position: absolute;
+    inset: 0;
+  }
+
+  .detailsColumn {
+    padding: 36px clamp(20px, 4vw, 56px) 40px;
+  }
+
+  .glowCard {
+    left: 50%;
+    top: 28%;
+    width: 360px;
+    height: 360px;
+  }
+}
+
+@media (max-width: 900px) {
+  .specRow {
+    grid-template-columns: 110px 1fr auto;
+    padding: 16px 0;
+  }
+
+  .specValue {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .specList {
+    margin-top: 24px;
+    margin-bottom: 24px;
+  }
+
+  .specRow {
+    grid-template-columns: 95px 1fr auto;
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .specValue {
+    font-size: 16px;
+  }
+
+  .footerNav {
+    flex-direction: column;
+    gap: 16px;
     text-align: center;
   }
 
-  .infoColumn {
+  .actionRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saveContactButton {
+    justify-content: center;
+  }
+
+  .socialButtonGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     align-items: center;
   }
-
-  .breadcrumbRow {
-    justify-content: center;
-  }
-
-  .roleContainer {
-    justify-content: center;
-  }
-
-  .metaGrid {
-    grid-template-columns: repeat(3, 1fr);
-    justify-items: center;
-  }
-
-  .metaCol {
-    padding: 0 0.8rem;
-  }
-
-  .socialsRow {
-    justify-content: center;
-  }
 }
 
-@media (max-width: 768px) {
-  .topHeader {
-    padding: 1.2rem 1.25rem 0.8rem;
-  }
 
-  .headerSubtitle {
-    display: none;
-  }
-
-  .headerDivider {
-    display: none;
-  }
-
-  .metaGrid {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
-  }
-
-  .metaColBorder {
-    border-right: none;
-    border-bottom: 1px solid var(--border-subtle);
-    padding-bottom: 0.8rem;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .metaCol {
-    padding: 0;
-  }
-
-  .portraitColumn {
-    max-width: 280px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .memberImage {
-    transition: none;
-  }
-
-  .socialBtn {
-    transition: none;
-  }
-
-  .topHeader,
-  .portraitColumn,
-  .infoColumn {
-    animation: none;
-  }
-}
