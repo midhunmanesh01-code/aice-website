@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { QRCodeCanvas } from "qrcode.react";
+import { MEMBERSHIP_FEE } from "@/lib/membership-config";
 import styles from "./Register.module.css";
 
 const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID || "aicecec@upi";
 const UPI_NAME = process.env.NEXT_PUBLIC_UPI_NAME || "AICE CEC";
-const MEMBERSHIP_FEE = Number(process.env.NEXT_PUBLIC_MEMBERSHIP_FEE) || 100;
 
 function CheckIcon({ className = "" }: { className?: string }) {
   return (
@@ -273,7 +273,6 @@ export default function RegisterPage() {
           college: formData.college,
           branch: formData.branch,
           year: formData.year,
-          amount: MEMBERSHIP_FEE,
           transactionId: transactionId.trim(),
           screenshotUrl: uploadedScreenshotUrl,
         }),

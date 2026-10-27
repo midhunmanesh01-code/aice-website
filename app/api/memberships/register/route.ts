@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { MEMBERSHIP_FEE } from "@/lib/membership-config";
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +14,6 @@ export async function POST(req: Request) {
       year,
       transactionId,
       screenshotUrl,
-      amount = 100,
     } = body;
 
     // Validate essential fields
@@ -107,7 +107,7 @@ export async function POST(req: Request) {
       college: (college || "College of Engineering Chengannur").trim(),
       branch: branch.trim(),
       year: year.trim(),
-      amount: Number(amount) || 100,
+      amount: MEMBERSHIP_FEE,
       transaction_id: cleanTxId,
       screenshot_url: screenshotUrl || null,
       status: "PENDING",
