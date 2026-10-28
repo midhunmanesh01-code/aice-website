@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, useCallback } from "react";
+import { useState, useSyncExternalStore, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import Navbar from "@/app/components/Navbar";
@@ -171,6 +169,61 @@ function DivisionLayersIcon() {
 }
 
 /* ──────────────────────────────────────────────────────────
+   Interactive Meta Card Component
+   ────────────────────────────────────────────────────────── */
+
+interface MetaCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  index: string;
+}
+
+function MetaCard({ icon, label, value, index }: MetaCardProps) {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const tiltX = (y - 50) * -0.15;
+    const tiltY = (x - 50) * 0.15;
+    card.style.setProperty("--mouse-x", `${x.toFixed(1)}%`);
+    card.style.setProperty("--mouse-y", `${y.toFixed(1)}%`);
+    card.style.setProperty("--tilt-x", `${tiltX.toFixed(2)}deg`);
+    card.style.setProperty("--tilt-y", `${tiltY.toFixed(2)}deg`);
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent<HTMLDivElement>) => {
+    const card = e.currentTarget;
+    card.style.setProperty("--mouse-x", "50%");
+    card.style.setProperty("--mouse-y", "50%");
+    card.style.setProperty("--tilt-x", "0deg");
+    card.style.setProperty("--tilt-y", "0deg");
+  };
+
+  return (
+    <div
+      className={styles.metaCard}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+    >
+      <div className={styles.metaCardSpotlight} aria-hidden="true" />
+      <div className={styles.metaCardBorderGlow} aria-hidden="true" />
+      <div className={styles.metaCardHeader}>
+        <div className={styles.metaCardIcon}>{icon}</div>
+        <span className={styles.metaCardIndex}>{index}</span>
+      </div>
+      <div className={styles.metaCardContent}>
+        <span className={styles.metaCardLabel}>{label}</span>
+        <span className={styles.metaCardValue} title={value}>
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
    Team and ID resolution helpers
    ────────────────────────────────────────────────────────── */
 
@@ -284,14 +337,12 @@ function useIsDesktop() {
 
 interface MemberProfileProps {
   member: TeamMemberProfile;
-  allMembers: TeamMemberProfile[];
+  allMembers?: TeamMemberProfile[];
 }
 
 export default function MemberProfile({
   member,
-  allMembers,
 }: MemberProfileProps) {
-  const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
 
@@ -310,40 +361,6 @@ export default function MemberProfile({
     () => window.location.href,
     () => "",
   );
-
-  // Compute previous and next member
-  const currentIndex = allMembers.findIndex((m) => m.slug === member.slug);
-  const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-  const totalMembers = allMembers.length || 1;
-
-  const prevMember = allMembers[(safeIndex - 1 + totalMembers) % totalMembers];
-  const nextMember = allMembers[(safeIndex + 1) % totalMembers];
-
-
-
-  // Keyboard navigation for left / right arrow keys
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        (e.target as HTMLElement)?.isContentEditable
-      ) {
-        return;
-      }
-
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        router.push(`/team26/${prevMember.slug}`);
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        router.push(`/team26/${nextMember.slug}`);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router, prevMember.slug, nextMember.slug]);
 
   // vCard download handler
   const handleSaveContact = useCallback(() => {
@@ -435,7 +452,7 @@ export default function MemberProfile({
       />
 
       {/* ── Official Site Navbar ── */}
-      <Navbar />
+      <Navbar defaultActive="EXECOM" />
 
       {/* ── 2. Unified Main Stage (Fullscreen Canvas + Content Grid) ── */}
       <section
@@ -560,35 +577,26 @@ export default function MemberProfile({
               className={`${styles.extendedDetails} ${mobileDetailsOpen ? styles.extendedDetailsOpen : ""}`}
             >
               <div className={styles.extendedDetailsInner}>
-                {/* 3 Sleek Meta Cards matching Reference Spec */}
+                {/* 3 Sleek Meta Cards with Interactive Desktop Reveal */}
                 <div className={styles.metaCardsRow}>
-                  <div className={styles.metaCard}>
-                    <div className={styles.metaCardIcon}>
-                      <GraduationCapIcon />
-                    </div>
-                    <div className={styles.metaCardContent}>
-                      <span className={styles.metaCardLabel}>Department</span>
-                      <span className={styles.metaCardValue}>{member.dept}</span>
-                    </div>
-                  </div>
-                  <div className={styles.metaCard}>
-                    <div className={styles.metaCardIcon}>
-                      <TeamUsersIcon />
-                    </div>
-                    <div className={styles.metaCardContent}>
-                      <span className={styles.metaCardLabel}>Team</span>
-                      <span className={styles.metaCardValue}>{teamValue}</span>
-                    </div>
-                  </div>
-                  <div className={styles.metaCard}>
-                    <div className={styles.metaCardIcon}>
-                      <DivisionLayersIcon />
-                    </div>
-                    <div className={styles.metaCardContent}>
-                      <span className={styles.metaCardLabel}>Division</span>
-                      <span className={styles.metaCardValue}>{member.categoryLabel}</span>
-                    </div>
-                  </div>
+                  <MetaCard
+                    icon={<GraduationCapIcon />}
+                    label="Department"
+                    value={member.dept}
+                    index=""
+                  />
+                  <MetaCard
+                    icon={<TeamUsersIcon />}
+                    label="Team"
+                    value={teamValue}
+                    index=""
+                  />
+                  <MetaCard
+                    icon={<DivisionLayersIcon />}
+                    label="Division"
+                    value={member.categoryLabel}
+                    index=""
+                  />
                 </div>
 
                 {/* Action Row */}
@@ -650,35 +658,9 @@ export default function MemberProfile({
                 </div>
               </div>
             </div>
-        </motion.div>
+          </motion.div>
         </div>
       </section>
-
-      {/* ── 4. Footer Bar ── */}
-      <motion.footer
-        {...createFadeUp(7)}
-        className={`${styles.footerBar} ${mobileDetailsOpen ? styles.footerBarOpen : ""}`}
-      >
-        <div className={styles.container}>
-          <nav className={styles.footerNav} aria-label="Member Navigation">
-            <Link
-              href={`/team26/${prevMember.slug}`}
-              className={styles.memberNavButton}
-              aria-label={`Previous member: ${prevMember.name}`}
-            >
-              {"←"} Previous member
-            </Link>
-
-            <Link
-              href={`/team26/${nextMember.slug}`}
-              className={styles.memberNavButton}
-              aria-label={`Next member: ${nextMember.name}`}
-            >
-              Next member {"→"}
-            </Link>
-          </nav>
-        </div>
-      </motion.footer>
     </main>
   );
 }

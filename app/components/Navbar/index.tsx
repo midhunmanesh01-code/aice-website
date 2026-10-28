@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import styles from "./Navbar.module.css";
 import { showToast } from "@/app/components/Toast";
 
@@ -13,11 +14,28 @@ const navLinks = [
   { label: "EXECOM", href: "/#execom", id: "nav-execom" },
 ];
 
-const Navbar = () => {
+interface NavbarProps {
+  defaultActive?: string;
+}
+
+const Navbar = ({ defaultActive }: NavbarProps = {}) => {
+  const pathname = usePathname();
+
+  const getInitialActive = useCallback(() => {
+    if (defaultActive) return defaultActive;
+    if (pathname?.startsWith("/team26")) return "EXECOM";
+    if (pathname?.startsWith("/events")) return "EVENTS";
+    return "HOME";
+  }, [defaultActive, pathname]);
+
   const [scrolled, setScrolled] = useState(false);
   const [onRedSection, setOnRedSection] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("HOME");
+  const [activeLink, setActiveLink] = useState(getInitialActive);
+
+  useEffect(() => {
+    setActiveLink(getInitialActive());
+  }, [getInitialActive]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,20 +63,22 @@ const Navbar = () => {
       ];
 
       const offset = 150;
-      let currentActive = "HOME";
+      let foundActive: string | null = null;
 
       for (const s of sections) {
         const el = document.getElementById(s.id);
         if (el) {
           const rect = el.getBoundingClientRect();
           if (rect.top <= offset) {
-            currentActive = s.label;
+            foundActive = s.label;
             break;
           }
         }
       }
 
-      setActiveLink(currentActive);
+      if (foundActive !== null && foundActive !== "") {
+        setActiveLink(foundActive);
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -133,11 +153,11 @@ const Navbar = () => {
     >
       <div className={styles.container}>
         <a
-          href="#home"
+          href="/#home"
           className={styles.logo}
           id="logo"
           aria-label="AICE Home"
-          onClick={(e) => handleNavClick(e, "#home", "HOME")}
+          onClick={(e) => handleNavClick(e, "/#home", "HOME")}
         >
           <span className={styles.logoMark}>
             <Image
