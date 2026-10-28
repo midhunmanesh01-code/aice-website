@@ -13,24 +13,6 @@ import styles from "./MemberProfile.module.css";
    SVG Icons matching Screenshot (37).png
    ────────────────────────────────────────────────────────── */
 
-function GitHubIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-      />
-    </svg>
-  );
-}
-
 function LinkedInIcon() {
   return (
     <svg
@@ -47,24 +29,6 @@ function LinkedInIcon() {
       <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
       <rect x="2" y="9" width="4" height="12" />
       <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-}
-
-function PhoneIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
     </svg>
   );
 }
@@ -88,7 +52,7 @@ function MailIcon() {
   );
 }
 
-function ContactDownloadIcon() {
+function ShareIcon() {
   return (
     <svg
       width="18"
@@ -96,14 +60,32 @@ function ContactDownloadIcon() {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+      <polyline points="16 6 12 2 8 6" />
+      <line x1="12" y1="2" x2="12" y2="15" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#22c55e"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
@@ -273,51 +255,6 @@ function resolveTeam(member: TeamMemberProfile): string {
   return member.categoryLabel || "AICE Team";
 }
 
-function formatMemberId(member: TeamMemberProfile): string {
-  const num = member.id.replace(/[^0-9]/g, "").padStart(2, "0");
-  if (member.id.startsWith("fac")) {
-    return `[AICE-26-FAC-${num}]`;
-  }
-  if (member.id.startsWith("sub")) {
-    return `[AICE-26-SUB-${num}]`;
-  }
-  return `[AICE-26-${num}]`;
-}
-
-function generateVCard(member: TeamMemberProfile): string {
-  const parts = member.name.trim().split(/\s+/);
-  const lastName = parts.length > 1 ? parts[parts.length - 1] : "";
-  const firstName = parts.length > 1 ? parts.slice(0, -1).join(" ") : parts[0];
-
-  const lines = [
-    "BEGIN:VCARD",
-    "VERSION:3.0",
-    `FN:${member.name}`,
-    `N:${lastName};${firstName};;;`,
-    `TITLE:${member.role}`,
-    "ORG:AICE - Artificial Intelligence Community for Excellence;College of Engineering Chengannur",
-  ];
-
-  const email = member.email || `${member.slug}@ceconline.edu`;
-  lines.push(`EMAIL;TYPE=INTERNET,WORK:${email}`);
-
-  const phone = member.phone || "+91 00000 00000";
-  lines.push(`TEL;TYPE=CELL,VOICE:${phone}`);
-
-  const linkedin = member.linkedin || `https://linkedin.com/in/${member.slug}`;
-  lines.push(`URL;TYPE=LinkedIn:${linkedin}`);
-
-  const github = member.github || `https://github.com/${member.slug}`;
-  lines.push(`URL;TYPE=GitHub:${github}`);
-
-  if (member.bio) {
-    lines.push(`NOTE:${member.bio}`);
-  }
-
-  lines.push("END:VCARD");
-  return lines.join("\r\n");
-}
-
 /* ──────────────────────────────────────────────────────────
    Member Profile Component
    ────────────────────────────────────────────────────────── */
@@ -362,19 +299,44 @@ export default function MemberProfile({
     () => "",
   );
 
-  // vCard download handler
-  const handleSaveContact = useCallback(() => {
-    const vcard = generateVCard(member);
-    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `${member.slug}.vcf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [member]);
+  // Share profile / copy link handler
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    const shareUrl =
+      typeof window !== "undefined"
+        ? window.location.href
+        : `https://aice.ceconline.edu/team26/${member.slug}`;
+    const shareData = {
+      title: `${member.name} — ${member.role} | AICE CEC`,
+      text: `${member.name}, ${member.role} at AICE (Artificial Intelligence Community for Excellence), College of Engineering Chengannur.`,
+      url: shareUrl,
+    };
+
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare(shareData)
+    ) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") return;
+      }
+    }
+
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch {
+      // fallback
+    }
+  }, [member.name, member.role, member.slug]);
 
   // Mobile toggle details handler
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
@@ -382,7 +344,14 @@ export default function MemberProfile({
   const handleToggleDetails = useCallback(() => {
     setMobileDetailsOpen((prev) => {
       const next = !prev;
-      if (!next) {
+      if (next) {
+        setTimeout(() => {
+          const el = document.getElementById("extended-details");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 150);
+      } else {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
       return next;
@@ -412,21 +381,25 @@ export default function MemberProfile({
 
   // Words split — each word is rendered as a strictly non-breaking unit
   const words = member.name.trim().split(/\s+/);
+  const nameLen = member.name.trim().length;
+  const wordCount = words.length;
+  const maxWordLen = Math.max(...words.map((w) => w.length));
+
+  let nameTierClass = styles.nameTier_short;
+  if (nameLen >= 19 || wordCount >= 4 || maxWordLen >= 12) {
+    nameTierClass = styles.nameTier_long;
+  } else if (nameLen >= 15 || maxWordLen >= 10) {
+    nameTierClass = styles.nameTier_medium;
+  }
 
   const qrValue =
     currentHref || `https://aice.ceconline.edu/team26/${member.slug}`;
 
   const teamValue = resolveTeam(member);
-  const formattedId = formatMemberId(member);
 
   // Fallback URLs for placeholders as requested
-  const githubUrl =
-    member.github || `https://github.com/${member.slug}`;
   const linkedinUrl =
     member.linkedin || `https://linkedin.com/in/${member.slug}`;
-  const phoneUrl = member.phone
-    ? `tel:${member.phone}`
-    : "tel:+910000000000";
   const emailUrl = member.email
     ? `mailto:${member.email}`
     : `mailto:${member.slug}@ceconline.edu`;
@@ -515,7 +488,7 @@ export default function MemberProfile({
               </div>
 
               {/* Name Heading (Strictly whole words; last word has gradient text) */}
-              <h1 className={styles.memberName} id="member-heading">
+              <h1 className={`${styles.memberName} ${nameTierClass}`} id="member-heading">
                 {words.map((word, idx) => {
                   const isLast = idx === words.length - 1;
                   return (
@@ -601,30 +574,18 @@ export default function MemberProfile({
 
                 {/* Action Row */}
                 <div className={styles.actionRow}>
-                  {/* Primary Red Pill: Save Contact (.vcf) */}
-                  <button
-                    type="button"
-                    onClick={handleSaveContact}
-                    className={styles.saveContactButton}
+                  {/* Primary Crimson Action: Get in touch (Email) */}
+                  <a
+                    href={emailUrl}
+                    className={styles.primaryActionButton}
+                    aria-label={`Send email to ${member.name}`}
                   >
-                    <ContactDownloadIcon />
-                    <span>Save contact</span>
-                  </button>
+                    <MailIcon />
+                    <span>Get in touch</span>
+                  </a>
 
-                  {/* Social Button Group */}
+                  {/* Social & Utility Button Group */}
                   <div className={styles.socialButtonGroup}>
-                    {/* GitHub */}
-                    <a
-                      href={githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.socialPillButton}
-                      aria-label={`${member.name} on GitHub`}
-                    >
-                      <GitHubIcon />
-                      <span>GitHub</span>
-                    </a>
-
                     {/* LinkedIn */}
                     <a
                       href={linkedinUrl}
@@ -637,23 +598,16 @@ export default function MemberProfile({
                       <span>LinkedIn</span>
                     </a>
 
-                    {/* Call (tel:) */}
-                    <a
-                      href={phoneUrl}
-                      className={styles.roundIconButton}
-                      aria-label={`Call ${member.name}`}
+                    {/* Share Profile */}
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className={`${styles.socialPillButton} ${copied ? styles.copiedPill : ""}`}
+                      aria-label={`Share ${member.name}'s profile`}
                     >
-                      <PhoneIcon />
-                    </a>
-
-                    {/* Email (mailto:) */}
-                    <a
-                      href={emailUrl}
-                      className={styles.roundIconButton}
-                      aria-label={`Email ${member.name}`}
-                    >
-                      <MailIcon />
-                    </a>
+                      {copied ? <CheckIcon /> : <ShareIcon />}
+                      <span>{copied ? "Link copied" : "Share profile"}</span>
+                    </button>
                   </div>
                 </div>
               </div>

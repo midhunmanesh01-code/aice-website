@@ -250,7 +250,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 26px;
+  margin-bottom: 22px;
   font-family: var(--font-mono-jb), monospace;
   font-size: 11px;
   text-transform: uppercase;
@@ -282,8 +282,6 @@
 .memberName {
   font-family: var(--font-syne), sans-serif;
   font-weight: 800;
-  font-size: clamp(38px, 5.2vw, 76px);
-  line-height: 1.0;
   letter-spacing: -0.025em;
   color: var(--text-main);
   margin: 0;
@@ -291,6 +289,21 @@
   -webkit-hyphens: none !important;
   word-break: normal !important;
   overflow-wrap: normal !important;
+}
+
+.nameTier_short {
+  font-size: clamp(44px, 5.2vw, 76px);
+  line-height: 1.02;
+}
+
+.nameTier_medium {
+  font-size: clamp(38px, 4.5vw, 64px);
+  line-height: 1.04;
+}
+
+.nameTier_long {
+  font-size: clamp(32px, 3.8vw, 54px);
+  line-height: 1.08;
 }
 
 .nameWord {
@@ -526,6 +539,7 @@
   margin-top: 6px;
 }
 
+.primaryActionButton,
 .saveContactButton {
   min-height: 46px;
   padding: 0 22px;
@@ -540,16 +554,19 @@
   gap: 8px;
   border: none;
   cursor: pointer;
+  text-decoration: none;
   transition: background-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
   box-shadow: 0 6px 20px -4px rgba(255, 59, 59, 0.4);
 }
 
+.primaryActionButton:hover,
 .saveContactButton:hover {
   background-color: #e02828;
   transform: translateY(-1px);
   box-shadow: 0 8px 24px -4px rgba(255, 59, 59, 0.55);
 }
 
+.primaryActionButton:focus-visible,
 .saveContactButton:focus-visible {
   outline: var(--focus-ring);
   outline-offset: 3px;
@@ -569,6 +586,7 @@
   align-items: center;
   gap: 8px;
   text-decoration: none;
+  cursor: pointer;
   transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease, color 200ms ease;
 }
 
@@ -584,30 +602,10 @@
   outline-offset: 3px;
 }
 
-.roundIconButton {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background-color: var(--card-surface);
-  border: var(--card-border);
-  color: var(--text-main);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease, color 200ms ease;
-}
-
-.roundIconButton:hover {
-  border-color: var(--red-accent);
-  background-color: rgba(255, 59, 59, 0.08);
-  color: var(--red-accent);
-  transform: translateY(-1px);
-}
-
-.roundIconButton:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: 3px;
+.copiedPill {
+  border-color: rgba(34, 197, 94, 0.45) !important;
+  color: #4ade80 !important;
+  background-color: rgba(34, 197, 94, 0.08) !important;
 }
 
 .socialButtonGroup {
@@ -759,8 +757,8 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 12px 0 8px;
-    gap: 8px;
+    padding: 8px 0 max(16px, env(safe-area-inset-bottom, 16px));
+    gap: 0;
     margin-top: auto;
     position: relative;
     z-index: 25;
@@ -774,21 +772,43 @@
   }
 
   .tagRow {
-    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
     justify-content: center;
+    text-align: center;
   }
 
   .memberName {
-    font-size: clamp(34px, 8.5vw, 46px);
-    line-height: 1.05;
     text-align: center;
+    margin: 0 0 8px 0;
+  }
+
+  .nameTier_short {
+    font-size: clamp(28px, 7.2vw, 36px);
+    line-height: 1.05;
+  }
+
+  .nameTier_medium {
+    font-size: clamp(24px, 6.2vw, 30px);
+    line-height: 1.08;
+  }
+
+  .nameTier_long {
+    font-size: clamp(21px, 5.4vw, 26px);
+    line-height: 1.12;
   }
 
   .collegeBio {
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 1.45;
     justify-content: center;
     text-align: center;
+    margin-top: 6px;
+    margin-bottom: 0;
+    max-width: 340px;
   }
 
   .mobileScrollCue {
@@ -797,7 +817,7 @@
     justify-content: center;
     gap: 8px;
     align-self: center;
-    margin: 14px auto 0;
+    margin: 12px auto 0;
     padding: 7px 12px 7px 18px;
     border-radius: 9999px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
@@ -984,17 +1004,27 @@
   .actionRow {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
 
+  .primaryActionButton,
   .saveContactButton {
     justify-content: center;
+    width: 100%;
   }
 
   .socialButtonGroup {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 10px;
     align-items: center;
+    width: 100%;
+  }
+
+  .socialButtonGroup > * {
+    flex: 1 1 50%;
+    justify-content: center;
+    min-width: 0;
   }
 }
 

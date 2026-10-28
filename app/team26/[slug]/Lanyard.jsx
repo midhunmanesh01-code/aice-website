@@ -968,7 +968,16 @@ const Lanyard = ({
       const anchorFrac = typeof s.anchor === 'number' ? s.anchor : (ANCHORS[s.anchor] ?? 0.5);
       const anchorX = (anchorFrac - 0.5) * viewWidth;
       const anchorY = viewHeight / 2 + 0.2;
-      const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, clamp(s.strapLength, 0, 1));
+
+      let strapFraction = clamp(s.strapLength ?? 0.44, 0, 1);
+      if (aspect < 0.75) {
+        // Moto G Power baseline: height = 823px with strap = 0.08
+        // For taller devices like Realme P4x (873px), scale strap length so the card-to-text gap matches Moto G Power
+        const heightDelta = view.height - 823;
+        strapFraction = clamp(strapFraction + heightDelta * 0.0016, 0.04, 0.35);
+      }
+
+      const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction);
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);
       configureSimulation(sim, layout, anchorY - hangTop);
