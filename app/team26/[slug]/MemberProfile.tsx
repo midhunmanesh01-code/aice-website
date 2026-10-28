@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore, useCallback } from "react";
+import { useEffect, useState, useSyncExternalStore, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -110,6 +110,66 @@ function ContactDownloadIcon() {
   );
 }
 
+function GraduationCapIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c3 3 9 3 12 0v-5" />
+    </svg>
+  );
+}
+
+function TeamUsersIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+function DivisionLayersIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </svg>
+  );
+}
+
 /* ──────────────────────────────────────────────────────────
    Team and ID resolution helpers
    ────────────────────────────────────────────────────────── */
@@ -209,6 +269,19 @@ function generateVCard(member: TeamMemberProfile): string {
    Member Profile Component
    ────────────────────────────────────────────────────────── */
 
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      if (typeof window === "undefined") return () => {};
+      const mql = window.matchMedia("(min-width: 961px)");
+      mql.addEventListener("change", onStoreChange);
+      return () => mql.removeEventListener("change", onStoreChange);
+    },
+    () => (typeof window !== "undefined" ? window.matchMedia("(min-width: 961px)").matches : true),
+    () => true
+  );
+}
+
 interface MemberProfileProps {
   member: TeamMemberProfile;
   allMembers: TeamMemberProfile[];
@@ -220,6 +293,7 @@ export default function MemberProfile({
 }: MemberProfileProps) {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
+  const isDesktop = useIsDesktop();
 
   // Front image for Lanyard (uses official ID card sample for Sarin MS or member photo)
   const cardFrontImage =
@@ -285,6 +359,19 @@ export default function MemberProfile({
     URL.revokeObjectURL(url);
   }, [member]);
 
+  // Mobile toggle details handler
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+
+  const handleToggleDetails = useCallback(() => {
+    setMobileDetailsOpen((prev) => {
+      const next = !prev;
+      if (!next) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return next;
+    });
+  }, []);
+
   // Framer motion entrance stagger
   const createFadeUp = (index: number) => {
     if (shouldReduceMotion) {
@@ -332,56 +419,75 @@ export default function MemberProfile({
       {/* ── Top Subtle Hairline Laser ── */}
       <div className={styles.topLightBeam} aria-hidden="true" />
 
-      {/* ── Visual Ambient Atmosphere with Tasteful Red Depth ── */}
-      <div className={styles.glowCard} aria-hidden="true" />
+      {/* ── Minimal Tech Grid ("The Checks", Exactly Matched to Reference Spec) ── */}
+      <div className={styles.bgGrid} aria-hidden="true" />
+
+      {/* ── Visual Ambient Atmosphere with Focused Crimson Card Aura ── */}
+      <div
+        className={`${styles.glowCard} ${mobileDetailsOpen ? styles.glowCardDetailsOpen : ""}`}
+        aria-hidden="true"
+      />
       <div className={styles.glowTopRight} aria-hidden="true" />
       <div className={styles.ambientVignette} aria-hidden="true" />
+      <div
+        className={`${styles.cardGroundShadow} ${mobileDetailsOpen ? styles.cardGroundShadowDetailsOpen : ""}`}
+        aria-hidden="true"
+      />
 
       {/* ── Official Site Navbar ── */}
       <Navbar />
 
-      {/* ── 2. Main Stage (Lanyard Card on Left, Details on Right) ── */}
+      {/* ── 2. Unified Main Stage (Fullscreen Canvas + Content Grid) ── */}
       <section
         className={styles.mainStage}
         aria-label="Member Profile Information"
       >
-        {/* stageGrid is full-width — left column is full-bleed lanyard, right is padded details */}
-        <div className={styles.stageGrid}>
-          {/* ── Left Column: Lanyard — fills full height, seamlessly sunk into background ── */}
-          <div className={styles.photoColumn}>
-            <div className={styles.cardBackdropAura} aria-hidden="true" />
-            <div className={styles.cardGroundShadow} aria-hidden="true" />
-            <motion.div
-              {...createFadeUp(1)}
-              className={styles.lanyardWrapper}
-              aria-label={`ID card for ${member.name}`}
-            >
-              <Lanyard
-                frontImage={cardFrontImage}
-                backImage={cardFrontImage}
-                imageFit="cover"
-                cardColor="#f8f8fa"
-                orientation="portrait"
-                finish="glossy"
-                cornerRadius={0.3}
-                size={0.62}
-                anchor="center"
-                strapLength={0.45}
-                strapColor="#111111"
-                strapWidth={0.65}
-                metal="silver"
-                gravity={1}
-                damping={0.5}
-                elasticity={0.5}
-                breeze={0.5}
-                interactive={true}
-                intro={true}
-              />
-            </motion.div>
-          </div>
+        {/* Fullscreen 3D Lanyard Layer — Spans 100% full screen, zero bounding box clipping! */}
+        <div
+          className={`${styles.lanyardLayer} ${mobileDetailsOpen ? styles.lanyardLayerDetailsOpen : ""}`}
+          aria-label={`ID card for ${member.name}`}
+        >
+          <Lanyard
+            frontImage={cardFrontImage}
+            backImage={cardFrontImage}
+            strapImage={isDesktop ? "/logos/aice_logo.png" : undefined}
+            imageFit="cover"
+            cardColor="#f8f8fa"
+            orientation="portrait"
+            finish="glossy"
+            cornerRadius={0.3}
+            size={isDesktop ? 0.64 : 0.62}
+            anchor={isDesktop ? 0.27 : "center"}
+            strapLength={isDesktop ? 0.44 : 0.08}
+            strapColor="#111111"
+            strapWidth={0.65}
+            metal="silver"
+            gravity={1}
+            damping={0.5}
+            elasticity={0.5}
+            breeze={0.5}
+            interactive={isDesktop || !mobileDetailsOpen}
+            intro={true}
+          />
+        </div>
 
-          {/* ── Right Column: Details — uses container-like padding ── */}
-          <div className={styles.detailsColumn}>
+        {/* Content Grid: Left Column Spacer (reserves resting space), Right Column (Details) */}
+        <div className={styles.contentGrid}>
+          <div
+            className={`${styles.cardAnchorArea} ${mobileDetailsOpen ? styles.cardAnchorAreaDetailsOpen : ""}`}
+            aria-hidden="true"
+          />
+
+          {/* Right Column: Member Details */}
+          <motion.div
+            {...createFadeUp(2)}
+            className={`${styles.detailsColumn} ${mobileDetailsOpen ? styles.detailsColumnDetailsOpen : ""}`}
+          >
+            {/* Primary Bio Block — In mobile view, this is framed in the initial screen */}
+            <div
+              id="initial-hero-block"
+              className={`${styles.initialHeroBlock} ${mobileDetailsOpen ? styles.heroBlockDetailsOpen : ""}`}
+            >
               {/* Tag Row (above the name) */}
               <div className={styles.tagRow}>
                 <div className={styles.tagRole}>
@@ -420,88 +526,139 @@ export default function MemberProfile({
                 )}
               </p>
 
-              {/* Spec List matching Screenshot (44).png */}
-              <div className={styles.specList}>
-                <div className={styles.specRow}>
-                  <span className={styles.specLabel}>Batch</span>
-                  <span className={styles.specValue}>{member.dept}</span>
-                  <span className={styles.specIndex}>01</span>
+              {/* Mobile Details Toggle Cue (seated at the bottom of the initial mobile view) */}
+              <button
+                type="button"
+                onClick={handleToggleDetails}
+                className={`${styles.mobileScrollCue} ${mobileDetailsOpen ? styles.mobileScrollCueOpen : ""}`}
+                aria-label={mobileDetailsOpen ? "Hide member details" : "View member details"}
+                aria-expanded={mobileDetailsOpen}
+              >
+                <span className={styles.cueText}>{mobileDetailsOpen ? "Hide details" : "View details"}</span>
+                <span className={`${styles.cueIconWrapper} ${mobileDetailsOpen ? styles.cueIconWrapperOpen : ""}`}>
+                  <svg
+                    className={`${styles.chevronIcon} ${mobileDetailsOpen ? styles.chevronOpen : ""}`}
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            {/* Extended Details Section (Meta cards + Action Buttons) */}
+            <div
+              id="extended-details"
+              className={`${styles.extendedDetails} ${mobileDetailsOpen ? styles.extendedDetailsOpen : ""}`}
+            >
+              <div className={styles.extendedDetailsInner}>
+                {/* 3 Sleek Meta Cards matching Reference Spec */}
+                <div className={styles.metaCardsRow}>
+                  <div className={styles.metaCard}>
+                    <div className={styles.metaCardIcon}>
+                      <GraduationCapIcon />
+                    </div>
+                    <div className={styles.metaCardContent}>
+                      <span className={styles.metaCardLabel}>Department</span>
+                      <span className={styles.metaCardValue}>{member.dept}</span>
+                    </div>
+                  </div>
+                  <div className={styles.metaCard}>
+                    <div className={styles.metaCardIcon}>
+                      <TeamUsersIcon />
+                    </div>
+                    <div className={styles.metaCardContent}>
+                      <span className={styles.metaCardLabel}>Team</span>
+                      <span className={styles.metaCardValue}>{teamValue}</span>
+                    </div>
+                  </div>
+                  <div className={styles.metaCard}>
+                    <div className={styles.metaCardIcon}>
+                      <DivisionLayersIcon />
+                    </div>
+                    <div className={styles.metaCardContent}>
+                      <span className={styles.metaCardLabel}>Division</span>
+                      <span className={styles.metaCardValue}>{member.categoryLabel}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className={styles.specRow}>
-                  <span className={styles.specLabel}>Team</span>
-                  <span className={styles.specValue}>{teamValue}</span>
-                  <span className={styles.specIndex}>02</span>
-                </div>
-                <div className={styles.specRow}>
-                  <span className={styles.specLabel}>Division</span>
-                  <span className={styles.specValue}>{member.categoryLabel}</span>
-                  <span className={styles.specIndex}>03</span>
-                </div>
-              </div>
 
-              {/* Action Row */}
-              <div className={styles.actionRow}>
-                {/* Primary Red Pill: Save Contact (.vcf) */}
-                <button
-                  type="button"
-                  onClick={handleSaveContact}
-                  className={styles.saveContactButton}
-                >
-                  <ContactDownloadIcon />
-                  <span>Save contact</span>
-                </button>
-
-                {/* Social Button Group */}
-                <div className={styles.socialButtonGroup}>
-                  {/* GitHub */}
-                  <a
-                    href={githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialPillButton}
-                    aria-label={`${member.name} on GitHub`}
+                {/* Action Row */}
+                <div className={styles.actionRow}>
+                  {/* Primary Red Pill: Save Contact (.vcf) */}
+                  <button
+                    type="button"
+                    onClick={handleSaveContact}
+                    className={styles.saveContactButton}
                   >
-                    <GitHubIcon />
-                    <span>GitHub</span>
-                  </a>
+                    <ContactDownloadIcon />
+                    <span>Save contact</span>
+                  </button>
 
-                  {/* LinkedIn */}
-                  <a
-                    href={linkedinUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialPillButton}
-                    aria-label={`${member.name} on LinkedIn`}
-                  >
-                    <LinkedInIcon />
-                    <span>LinkedIn</span>
-                  </a>
+                  {/* Social Button Group */}
+                  <div className={styles.socialButtonGroup}>
+                    {/* GitHub */}
+                    <a
+                      href={githubUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialPillButton}
+                      aria-label={`${member.name} on GitHub`}
+                    >
+                      <GitHubIcon />
+                      <span>GitHub</span>
+                    </a>
 
-                  {/* Call (tel:) */}
-                  <a
-                    href={phoneUrl}
-                    className={styles.roundIconButton}
-                    aria-label={`Call ${member.name}`}
-                  >
-                    <PhoneIcon />
-                  </a>
+                    {/* LinkedIn */}
+                    <a
+                      href={linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialPillButton}
+                      aria-label={`${member.name} on LinkedIn`}
+                    >
+                      <LinkedInIcon />
+                      <span>LinkedIn</span>
+                    </a>
 
-                  {/* Email (mailto:) */}
-                  <a
-                    href={emailUrl}
-                    className={styles.roundIconButton}
-                    aria-label={`Email ${member.name}`}
-                  >
-                    <MailIcon />
-                  </a>
+                    {/* Call (tel:) */}
+                    <a
+                      href={phoneUrl}
+                      className={styles.roundIconButton}
+                      aria-label={`Call ${member.name}`}
+                    >
+                      <PhoneIcon />
+                    </a>
+
+                    {/* Email (mailto:) */}
+                    <a
+                      href={emailUrl}
+                      className={styles.roundIconButton}
+                      aria-label={`Email ${member.name}`}
+                    >
+                      <MailIcon />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+        </motion.div>
+        </div>
+      </section>
 
       {/* ── 4. Footer Bar ── */}
-      <motion.footer {...createFadeUp(7)} className={styles.footerBar}>
+      <motion.footer
+        {...createFadeUp(7)}
+        className={`${styles.footerBar} ${mobileDetailsOpen ? styles.footerBarOpen : ""}`}
+      >
         <div className={styles.container}>
           <nav className={styles.footerNav} aria-label="Member Navigation">
             <Link

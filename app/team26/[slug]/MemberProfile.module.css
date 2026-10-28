@@ -3,7 +3,7 @@
    ────────────────────────────────────────────────────────── */
 
 .page {
-  --bg: var(--background, #09090b);
+  --bg: #08080a;
   --text-main: #f4f4f5;
   --text-muted: #8e8e93;
   --red-accent: #ff3b3b;
@@ -32,9 +32,11 @@
 }
 
 /* ──────────────────────────────────────────────────────────
-   0. MINIMAL & VISUALLY APPEALING TECH BACKGROUND
-      Dual-frequency blueprint block grid, focused crimson card
-      studio aura, top laser beam, and balanced ambient depth
+   0. EXACT REFERENCE TECH BACKGROUND
+      - Subtle 44px dark modular grid (matched to reference spec)
+      - Focused crimson studio card aura (sinks 3D ID card naturally)
+      - Soft top-right red ambient warmth
+      - Deep ambient vignette fading to pure void
    ────────────────────────────────────────────────────────── */
 .topLightBeam {
   position: fixed;
@@ -45,67 +47,93 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.12) 15%,
-    rgba(229, 38, 45, 0.55) 45%,
-    rgba(255, 74, 79, 0.8) 50%,
-    rgba(229, 38, 45, 0.55) 55%,
-    rgba(255, 255, 255, 0.12) 85%,
+    rgba(255, 255, 255, 0.08) 15%,
+    rgba(229, 38, 45, 0.45) 45%,
+    rgba(255, 74, 79, 0.6) 50%,
+    rgba(229, 38, 45, 0.45) 55%,
+    rgba(255, 255, 255, 0.08) 85%,
     transparent 100%
   );
-  z-index: 40;
+  z-index: 1001;
   pointer-events: none;
 }
 
+/* Subtle 44px Tech Modular Block Grid (Exact match to reference image) */
+.bgGrid {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 85% 75% at 50% 45%,
+    #000000 25%,
+    rgba(0, 0, 0, 0.4) 60%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(
+    ellipse 85% 75% at 50% 45%,
+    #000000 25%,
+    rgba(0, 0, 0, 0.4) 60%,
+    transparent 92%
+  );
+}
 
-/* Focused Crimson Studio Glow — sinks the 3D card into the space with rich depth */
+/* Focused Crimson Studio Glow — Sinks the 3D card into the space with rich red depth */
 .glowCard {
   pointer-events: none;
   position: fixed;
   left: 28%;
-  top: 46%;
+  top: 50%;
   transform: translate(-50%, -50%);
-  width: clamp(420px, 46vw, 680px);
-  height: clamp(460px, 52vw, 740px);
+  width: clamp(400px, 46vw, 660px);
+  height: clamp(480px, 54vw, 760px);
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    rgba(229, 38, 45, 0.16) 0%,
-    rgba(229, 38, 45, 0.07) 42%,
-    rgba(229, 38, 45, 0.02) 65%,
+    rgba(239, 44, 44, 0.22) 0%,
+    rgba(220, 38, 38, 0.12) 38%,
+    rgba(180, 20, 20, 0.035) 64%,
     transparent 78%
   );
-  filter: blur(80px);
+  filter: blur(75px);
   z-index: 0;
 }
 
-/* Soft Top-Right Red Accent — balances the composition diagonally */
+/* Soft Top-Right Red Accent — Balances the composition diagonally */
 .glowTopRight {
   pointer-events: none;
   position: fixed;
-  right: -6rem;
-  top: -6rem;
-  width: 34rem;
-  height: 34rem;
+  right: -4rem;
+  top: -4rem;
+  width: 38rem;
+  height: 38rem;
   border-radius: 9999px;
   background: radial-gradient(
     circle,
-    rgba(229, 38, 45, 0.08) 0%,
-    rgba(229, 38, 45, 0.02) 50%,
+    rgba(220, 38, 38, 0.07) 0%,
+    rgba(180, 20, 20, 0.02) 45%,
     transparent 70%
   );
   filter: blur(100px);
   z-index: 0;
 }
 
+/* Deep Ambient Vignette */
 .ambientVignette {
   pointer-events: none;
   position: fixed;
   inset: 0;
   background: radial-gradient(
-    ellipse 90% 75% at 50% 35%,
-    transparent 45%,
-    rgba(9, 9, 11, 0.45) 85%,
-    rgba(9, 9, 11, 0.8) 100%
+    ellipse 90% 80% at 50% 45%,
+    transparent 38%,
+    rgba(8, 8, 10, 0.5) 75%,
+    rgba(8, 8, 10, 0.95) 100%
   );
   z-index: 0;
 }
@@ -121,93 +149,111 @@
 }
 
 /* ──────────────────────────────────────────────────────────
-   2. MAIN STAGE (TWO COLUMNS)
+   2. UNIFIED MAIN STAGE (FULLSCREEN PRESENTATION)
    ────────────────────────────────────────────────────────── */
 .mainStage {
   position: relative;
   z-index: 10;
   flex: 1;
   display: flex;
-  align-items: stretch;
-  padding: 0;
-  width: 100%;
-  min-height: calc(100svh - var(--nav-height, 72px));
-}
-
-.stageGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  align-items: stretch;
-  width: 100%;
-  /* Left column right-border as a subtle divider */
-  /* (handled via photoColumn border-right below) */
-}
-
-/* ── Photo Column ── */
-.photoColumn {
-  position: relative;
-  width: 100%;
-  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: calc(100svh - var(--nav-height, 72px));
+  width: 100%;
+  padding: 0 clamp(24px, 4vw, 64px);
+  min-height: calc(100svh - var(--nav-height, 72px) - 80px);
+}
+
+/* 3D Lanyard Layer — Fullscreen fixed on desktop! Completely unboxed & unclipped! */
+.lanyardLayer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 15;
+  pointer-events: none;
   overflow: hidden;
 }
 
-/* Dedicated soft stage backlight behind the hanging ID card to sink it naturally into the scene */
-.cardBackdropAura {
-  position: absolute;
-  top: 48%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(280px, 34vw, 460px);
-  height: clamp(380px, 45vw, 580px);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.065) 0%,
-    rgba(229, 38, 45, 0.04) 42%,
-    transparent 72%
-  );
-  filter: blur(36px);
-  pointer-events: none;
-  z-index: 0;
+/* Content Grid: Centers details on the right while leaving the left open for the card */
+.contentGrid {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
 }
 
 /* Subtle contact ground shadow beneath the hanging 3D card */
 .cardGroundShadow {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
+  position: fixed;
+  bottom: clamp(60px, 11vh, 110px);
+  left: 27%;
   transform: translateX(-50%);
   width: 260px;
-  height: 44px;
+  height: 36px;
   border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.65) 0%, transparent 72%);
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, transparent 72%);
   filter: blur(14px);
   pointer-events: none;
-  z-index: 0;
+  z-index: 1;
 }
 
-/* Lanyard wrapper — fills the entire left column, no box */
-.lanyardWrapper {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
+/* Left column placeholder establishing the card's resting zone */
+.cardAnchorArea {
+  position: relative;
   width: 100%;
   height: 100%;
+  min-height: 480px;
+  pointer-events: none;
 }
 
 /* ──────────────────────────────────────────────────────────
    3. DETAILS COLUMN
    ────────────────────────────────────────────────────────── */
 .detailsColumn {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   justify-content: center;
-  padding: clamp(40px, 6vh, 80px) clamp(32px, 5vw, 72px);
+  padding: clamp(20px, 3vh, 36px) 0;
+}
+
+.initialHeroBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.extendedDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.extendedDetailsInner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.mobileScrollCue {
+  display: none;
+}
+
+.chevronIcon {
+  display: block;
+  transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
 }
 
 /* ── Tag Row (above the name) ── */
@@ -293,47 +339,65 @@
   font-style: normal;
 }
 
-/* ── Spec List (Pixel-Matched to Screenshot (44).png) ── */
-.specList {
-  width: 100%;
-  margin-top: 40px;
-  margin-bottom: 36px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.specRow {
+/* ── 3 Sleek Meta Cards matching Reference Spec ── */
+.metaCardsRow {
   display: grid;
-  grid-template-columns: 170px 1fr auto;
-  align-items: center;
-  gap: 16px;
-  padding: 19px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-top: 14px;
+  margin-bottom: 8px;
 }
 
-.specLabel {
+.metaCard {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease;
+}
+
+.metaCard:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.metaCardIcon {
+  color: #ff4a4f;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.metaCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.metaCardLabel {
   font-family: var(--font-mono-jb), monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.45);
 }
 
-.specValue {
+.metaCardValue {
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-weight: 600;
-  font-size: 21px;
-  letter-spacing: -0.01em;
+  font-size: 15.5px;
   color: #ffffff;
-}
-
-.specIndex {
-  font-family: var(--font-mono-jb), monospace;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.25);
-  text-align: right;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ── Action Row ── */
@@ -342,7 +406,7 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .saveContactButton {
@@ -455,6 +519,7 @@
   gap: 16px;
 }
 
+
 .memberNavButton {
   display: inline-flex;
   align-items: center;
@@ -479,74 +544,384 @@
   outline-offset: 2px;
 }
 
+@media (min-width: 961px) {
+  .lanyardLayer.lanyardLayerDetailsOpen {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .cardAnchorArea.cardAnchorAreaDetailsOpen {
+    display: block !important;
+    flex: none !important;
+    min-height: unset !important;
+    height: auto !important;
+  }
+
+  .glowCard.glowCardDetailsOpen,
+  .cardGroundShadow.cardGroundShadowDetailsOpen {
+    opacity: 1 !important;
+  }
+
+  .initialHeroBlock.heroBlockDetailsOpen {
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+}
+
 /* ──────────────────────────────────────────────────────────
    5. RESPONSIVENESS
    ────────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
+  .page {
+    padding-top: 0;
+  }
+
   .mainStage {
-    min-height: unset;
-  }
-
-  .stageGrid {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .photoColumn {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding: 0 clamp(16px, 4vw, 24px) 24px;
     position: relative;
-    min-height: 520px;
-    height: 56vw;
-    max-height: 600px;
+    width: 100%;
   }
 
-  .lanyardWrapper {
+  .lanyardLayer {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100svh;
+    max-height: 100svh;
+    bottom: unset;
+    width: 100%;
+    z-index: 5;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 350ms ease, transform 450ms cubic-bezier(0.16, 1, 0.3, 1), visibility 450ms;
   }
 
-  .detailsColumn {
-    padding: 36px clamp(20px, 4vw, 56px) 40px;
+  .lanyardLayer.lanyardLayerDetailsOpen {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.92);
+    pointer-events: none !important;
+    visibility: hidden;
+  }
+
+  .contentGrid {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: calc(100svh - 24px);
+    width: 100%;
+    gap: 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Full ID card resting zone on mobile: card hangs naturally in the upper/middle zone */
+  .cardAnchorArea {
+    display: block;
+    flex: 1;
+    min-height: clamp(340px, 46vh, 420px);
+    width: 100%;
+    pointer-events: none;
+    transition: all 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cardAnchorArea.cardAnchorAreaDetailsOpen {
+    flex: 0 0 0px;
+    min-height: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .cardGroundShadow {
+    position: absolute;
+    left: 50%;
+    top: clamp(430px, 50vh, 510px);
+    bottom: unset;
+    transform: translateX(-50%);
+    width: 230px;
+    height: 26px;
+    transition: opacity 300ms ease;
+  }
+
+  .cardGroundShadow.cardGroundShadowDetailsOpen {
+    opacity: 0;
   }
 
   .glowCard {
     left: 50%;
-    top: 28%;
-    width: 360px;
-    height: 360px;
+    top: clamp(260px, 34vh, 320px);
+    width: clamp(340px, 80vw, 420px);
+    height: clamp(340px, 80vw, 420px);
+    transform: translate(-50%, -50%);
+    transition: opacity 300ms ease;
+  }
+
+  .glowCard.glowCardDetailsOpen {
+    opacity: 0;
+  }
+
+  .detailsColumn {
+    width: 100%;
+    padding: 0;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
+    transition: margin-top 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .detailsColumn.detailsColumnDetailsOpen {
+    margin-top: 0;
+  }
+
+  /* Seated cleanly at the bottom of the initial mobile screen */
+  .initialHeroBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 12px 0 8px;
+    gap: 8px;
+    margin-top: auto;
+    position: relative;
+    z-index: 25;
+    pointer-events: auto;
+    transition: padding 450ms cubic-bezier(0.16, 1, 0.3, 1), margin 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .initialHeroBlock.heroBlockDetailsOpen {
+    margin-top: 0;
+    padding: 24px 0 10px;
+  }
+
+  .tagRow {
+    margin-bottom: 4px;
+    justify-content: center;
+  }
+
+  .memberName {
+    font-size: clamp(34px, 8.5vw, 46px);
+    line-height: 1.05;
+    text-align: center;
+  }
+
+  .collegeBio {
+    font-size: 14px;
+    line-height: 1.45;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .mobileScrollCue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: center;
+    margin: 14px auto 0;
+    padding: 7px 12px 7px 18px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.04) 100%);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    position: relative;
+    z-index: 50;
+    pointer-events: auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease, transform 200ms ease;
+  }
+
+  .mobileScrollCue:hover,
+  .mobileScrollCue:active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 10px 28px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+
+  .mobileScrollCueOpen {
+    background: linear-gradient(135deg, rgba(255, 59, 59, 0.16) 0%, rgba(255, 59, 59, 0.06) 100%);
+    border-color: rgba(255, 59, 59, 0.35);
+    box-shadow: 0 8px 24px -4px rgba(255, 59, 59, 0.3), inset 0 1px 0 rgba(255, 120, 120, 0.25);
+    color: #ffffff;
+  }
+
+  .mobileScrollCueOpen:hover,
+  .mobileScrollCueOpen:active {
+    background: linear-gradient(135deg, rgba(255, 59, 59, 0.22) 0%, rgba(255, 59, 59, 0.1) 100%);
+    border-color: rgba(255, 59, 59, 0.5);
+    box-shadow: 0 10px 28px -4px rgba(255, 59, 59, 0.4), inset 0 1px 0 rgba(255, 120, 120, 0.3);
+  }
+
+  .cueText {
+    line-height: 1;
+  }
+
+  .cueIconWrapper {
+    width: 24px;
+    height: 24px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+
+  .mobileScrollCue:hover .cueIconWrapper {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .mobileScrollCueOpen .cueIconWrapper {
+    background: rgba(255, 59, 59, 0.25);
+    color: #ff6b6b;
+  }
+
+  /* Smooth CSS Grid expand/collapse for mobile */
+  .extendedDetails {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  .extendedDetails.extendedDetailsOpen {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .extendedDetailsInner {
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 24px;
+  }
+
+  .footerBar {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 350ms ease;
+    padding: 0;
+    border: none;
+    pointer-events: none;
+  }
+
+  .footerBar.footerBarOpen {
+    max-height: 240px;
+    opacity: 1;
+    padding: 24px 0 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: auto;
   }
 }
 
-@media (max-width: 900px) {
-  .specRow {
-    grid-template-columns: 110px 1fr auto;
-    padding: 16px 0;
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .metaCardsRow {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
-  .specValue {
-    font-size: 18px;
+  .metaCard {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+  }
+
+  .metaCardIcon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(255, 74, 79, 0.12) 0%, rgba(255, 74, 79, 0.04) 100%);
+    border: 1px solid rgba(255, 74, 79, 0.18);
+    box-shadow: 0 2px 8px -2px rgba(255, 74, 79, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ff4a4f;
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+
+  .metaCardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .metaCardLabel {
+    font-family: var(--font-mono-jb), monospace;
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.48);
+    line-height: 1.2;
+  }
+
+  .metaCardValue {
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 @media (max-width: 640px) {
-  .specList {
-    margin-top: 24px;
-    margin-bottom: 24px;
-  }
-
-  .specRow {
-    grid-template-columns: 95px 1fr auto;
-    gap: 12px;
-    padding: 14px 0;
-  }
-
-  .specValue {
-    font-size: 16px;
-  }
-
   .footerNav {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .memberNavButton {
+    padding: 8px 10px;
+    font-size: 13px;
+    white-space: nowrap;
   }
 
   .actionRow {
