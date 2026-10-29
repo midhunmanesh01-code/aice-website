@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useSyncExternalStore, useCallback } from "react";
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
-import { QRCodeSVG } from "qrcode.react";
 import Navbar from "@/app/components/Navbar";
 import type { TeamMemberProfile } from "@/lib/team-members";
 import Lanyard from "./Lanyard";
+import ShareCardModal from "./ShareCardModal";
 import styles from "./MemberProfile.module.css";
 
 /* ──────────────────────────────────────────────────────────
@@ -68,24 +67,6 @@ function ShareIcon() {
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
       <polyline points="16 6 12 2 8 6" />
       <line x1="12" y1="2" x2="12" y2="15" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#22c55e"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
@@ -289,54 +270,8 @@ export default function MemberProfile({
       ? "/assets/official-id-sample.jpg"
       : (member.image || "/assets/placeholder-avatar.svg");
 
-  // Subscribe to client-side window URL cleanly without cascading renders
-  const currentHref = useSyncExternalStore(
-    (onStoreChange) => {
-      window.addEventListener("popstate", onStoreChange);
-      return () => window.removeEventListener("popstate", onStoreChange);
-    },
-    () => window.location.href,
-    () => "",
-  );
-
-  // Share profile / copy link handler
-  const [copied, setCopied] = useState(false);
-
-  const handleShare = useCallback(async () => {
-    const shareUrl =
-      typeof window !== "undefined"
-        ? window.location.href
-        : `https://aice.ceconline.edu/team26/${member.slug}`;
-    const shareData = {
-      title: `${member.name} — ${member.role} | AICE CEC`,
-      text: `${member.name}, ${member.role} at AICE (Artificial Intelligence Community for Excellence), College of Engineering Chengannur.`,
-      url: shareUrl,
-    };
-
-    if (
-      typeof navigator !== "undefined" &&
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare(shareData)
-    ) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (err) {
-        if ((err as Error)?.name === "AbortError") return;
-      }
-    }
-
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      // fallback
-    }
-  }, [member.name, member.role, member.slug]);
+  // Share profile card modal state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   // Mobile toggle details handler
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
@@ -391,9 +326,6 @@ export default function MemberProfile({
   } else if (nameLen >= 15 || maxWordLen >= 10) {
     nameTierClass = styles.nameTier_medium;
   }
-
-  const qrValue =
-    currentHref || `https://aice.ceconline.edu/team26/${member.slug}`;
 
   const teamValue = resolveTeam(member);
 
@@ -601,12 +533,12 @@ export default function MemberProfile({
                     {/* Share Profile */}
                     <button
                       type="button"
-                      onClick={handleShare}
-                      className={`${styles.socialPillButton} ${copied ? styles.copiedPill : ""}`}
-                      aria-label={`Share ${member.name}'s profile`}
+                      onClick={() => setShareModalOpen(true)}
+                      className={styles.socialPillButton}
+                      aria-label={`Share ${member.name}'s profile card`}
                     >
-                      {copied ? <CheckIcon /> : <ShareIcon />}
-                      <span>{copied ? "Link copied" : "Share profile"}</span>
+                      <ShareIcon />
+                      <span>Share profile</span>
                     </button>
                   </div>
                 </div>
@@ -615,6 +547,13 @@ export default function MemberProfile({
           </motion.div>
         </div>
       </section>
+
+      {/* Official AICE Execom Card Share Modal */}
+      <ShareCardModal
+        member={member}
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
     </main>
   );
 }
