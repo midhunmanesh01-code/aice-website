@@ -1,26 +1,29 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Bebas_Neue, Kanit } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import ToastContainer from "@/app/components/Toast";
 import { Analytics } from "@vercel/analytics/react";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/geist.woff2",
+  weight: "100 900",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const bebasNeue = Bebas_Neue({
+const bebasNeue = localFont({
+  src: "./fonts/bebas-neue-regular.woff2",
   weight: "400",
   variable: "--font-bebas-neue",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const kanit = Kanit({
+const kanit = localFont({
+  src: [
+    { path: "./fonts/kanit-bold.woff2", weight: "700" },
+    { path: "./fonts/kanit-black.woff2", weight: "900" },
+  ],
   variable: "--font-kanit",
-  subsets: ["latin"],
-  weight: ["700", "900"],
   display: "swap",
 });
 

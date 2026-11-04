@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Syne, JetBrains_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import cardPortraits from "@/data/team-26/card-portraits.json";
 import { getMemberBySlug, getAllMemberSlugs } from "@/lib/team-members";
 import MemberProfile from "./MemberProfile";
 
-const syne = Syne({
-  subsets: ["latin"],
-  weight: ["700", "800"],
+const syne = localFont({
+  src: "./fonts/syne.woff2",
+  weight: "700 800",
   variable: "--font-syne",
   display: "swap",
 });
@@ -20,16 +19,17 @@ const spaceGrotesk = localFont({
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const jetbrainsMono = localFont({
+  src: "./fonts/jetbrains-mono.woff2",
+  weight: "400 700",
   variable: "--font-mono-jb",
   display: "swap",
+  adjustFontFallback: false,
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const inter = localFont({
+  src: "./fonts/inter.woff2",
+  weight: "400 700",
   variable: "--font-inter",
   display: "swap",
 });
