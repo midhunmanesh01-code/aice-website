@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Syne, Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import { Syne, JetBrains_Mono, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import cardPortraits from "@/data/team-26/card-portraits.json";
 import { getMemberBySlug, getAllMemberSlugs } from "@/lib/team-members";
@@ -13,9 +13,9 @@ const syne = Syne({
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const spaceGrotesk = localFont({
+  src: "./fonts/space-grotesk.woff2",
+  weight: "400 700",
   variable: "--font-space-grotesk",
   display: "swap",
 });
@@ -79,7 +79,7 @@ export async function generateMetadata({
           url: member.image,
           width: 600,
           height: 600,
-          alt: `${member.name} — ${member.role}, AICE CEC`,
+          alt: `${member.name} | AICE CEC`,
         },
       ],
     },
