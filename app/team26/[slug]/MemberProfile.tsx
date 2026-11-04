@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore, useCallback } from "react";
+import { preconnect, preload } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
 import type { TeamMemberProfile } from "@/lib/team-members";
@@ -225,10 +226,14 @@ function resolveTeam(member: TeamMemberProfile): string {
   if (role.includes("content")) return "Content Team";
   if (role.includes("media")) return "Media Team";
   if (role.includes("project")) return "Project Team";
-  if (role.includes("treasurer") || role.includes("finance")) return "Finance Team";
-  if (role.includes("program") || role.includes("operation")) return "Operation Team";
-  if (role.includes("outreach") || /\bpr\b/i.test(role)) return "PR & Outreach Team";
-  if (role.includes("student lead") || role.includes("lead")) return "Lead Team";
+  if (role.includes("treasurer") || role.includes("finance"))
+    return "Finance Team";
+  if (role.includes("program") || role.includes("operation"))
+    return "Operation Team";
+  if (role.includes("outreach") || /\bpr\b/i.test(role))
+    return "PR & Outreach Team";
+  if (role.includes("student lead") || role.includes("lead"))
+    return "Lead Team";
 
   if (member.category === "execom") return "Core Team";
   if (member.category === "faculty") return "Faculty Advisor";
@@ -248,27 +253,36 @@ function useIsDesktop() {
       mql.addEventListener("change", onStoreChange);
       return () => mql.removeEventListener("change", onStoreChange);
     },
-    () => (typeof window !== "undefined" ? window.matchMedia("(min-width: 961px)").matches : true),
-    () => true
+    () =>
+      typeof window !== "undefined"
+        ? window.matchMedia("(min-width: 961px)").matches
+        : true,
+    () => true,
   );
 }
 
 interface MemberProfileProps {
   member: TeamMemberProfile;
-  allMembers?: TeamMemberProfile[];
+  cardFontFamily: string;
+  cardCutout?: string;
 }
 
 export default function MemberProfile({
   member,
+  cardFontFamily,
+  cardCutout,
 }: MemberProfileProps) {
+  if (cardCutout) {
+    preconnect(new URL(cardCutout).origin, { crossOrigin: "anonymous" });
+    preload(cardCutout, {
+      as: "image",
+      crossOrigin: "anonymous",
+      fetchPriority: "high",
+    });
+  }
+
   const shouldReduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
-
-  // Front image for Lanyard (uses official ID card sample for Sarin MS or member photo)
-  const cardFrontImage =
-    member.slug === "sarin-ms"
-      ? "/assets/official-id-sample.jpg"
-      : (member.image || "/assets/placeholder-avatar.svg");
 
   // Share profile card modal state
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -364,41 +378,40 @@ export default function MemberProfile({
         className={styles.mainStage}
         aria-label="Member Profile Information"
       >
-        {/* Fullscreen 3D Lanyard Layer — Spans 100% full screen, zero bounding box clipping! */}
-        <div
-          className={`${styles.lanyardLayer} ${mobileDetailsOpen ? styles.lanyardLayerDetailsOpen : ""}`}
-          aria-label={`ID card for ${member.name}`}
-        >
-          <Lanyard
-            frontImage={cardFrontImage}
-            backImage={cardFrontImage}
-            strapImage={isDesktop ? "/logos/aice_logo.png" : undefined}
-            imageFit="cover"
-            cardColor="#f8f8fa"
-            orientation="portrait"
-            finish="glossy"
-            cornerRadius={0.3}
-            size={isDesktop ? 0.64 : 0.62}
-            anchor={isDesktop ? 0.27 : "center"}
-            strapLength={isDesktop ? 0.44 : 0.08}
-            strapColor="#111111"
-            strapWidth={0.65}
-            metal="silver"
-            gravity={1}
-            damping={0.5}
-            elasticity={0.5}
-            breeze={0.5}
-            interactive={isDesktop || !mobileDetailsOpen}
-            intro={true}
-          />
-        </div>
-
-        {/* Content Grid: Left Column Spacer (reserves resting space), Right Column (Details) */}
         <div className={styles.contentGrid}>
           <div
             className={`${styles.cardAnchorArea} ${mobileDetailsOpen ? styles.cardAnchorAreaDetailsOpen : ""}`}
-            aria-hidden="true"
-          />
+          >
+            <div
+              className={`${styles.lanyardLayer} ${mobileDetailsOpen ? styles.lanyardLayerDetailsOpen : ""}`}
+              aria-label={`ID card for ${member.name}`}
+            >
+              <Lanyard
+                member={member}
+                fontFamily={cardFontFamily}
+                cutoutUrl={cardCutout}
+                strapImage={isDesktop ? "/logos/aice_logo.png" : undefined}
+                cardColor="#f8f8f8"
+                orientation="portrait"
+                finish="matte"
+                cornerRadius={0.16}
+                size={isDesktop ? 0.64 : 0.8}
+                anchor={isDesktop ? 0.27 : "center"}
+                strapLength={0.44}
+                bottomInset={isDesktop ? undefined : 8}
+                strapColor="#111111"
+                strapWidth={0.65}
+                metal="silver"
+                gravity={1}
+                damping={0.5}
+                elasticity={0.5}
+                breeze={0.5}
+                active={isDesktop || !mobileDetailsOpen}
+                interactive={isDesktop || !mobileDetailsOpen}
+                intro={true}
+              />
+            </div>
+          </div>
 
           {/* Right Column: Member Details */}
           <motion.div
@@ -420,7 +433,10 @@ export default function MemberProfile({
               </div>
 
               {/* Name Heading (Strictly whole words; last word has gradient text) */}
-              <h1 className={`${styles.memberName} ${nameTierClass}`} id="member-heading">
+              <h1
+                className={`${styles.memberName} ${nameTierClass}`}
+                id="member-heading"
+              >
                 {words.map((word, idx) => {
                   const isLast = idx === words.length - 1;
                   return (
@@ -453,11 +469,19 @@ export default function MemberProfile({
                 type="button"
                 onClick={handleToggleDetails}
                 className={`${styles.mobileScrollCue} ${mobileDetailsOpen ? styles.mobileScrollCueOpen : ""}`}
-                aria-label={mobileDetailsOpen ? "Hide member details" : "View member details"}
+                aria-label={
+                  mobileDetailsOpen
+                    ? "Hide member details"
+                    : "View member details"
+                }
                 aria-expanded={mobileDetailsOpen}
               >
-                <span className={styles.cueText}>{mobileDetailsOpen ? "Hide details" : "View details"}</span>
-                <span className={`${styles.cueIconWrapper} ${mobileDetailsOpen ? styles.cueIconWrapperOpen : ""}`}>
+                <span className={styles.cueText}>
+                  {mobileDetailsOpen ? "Hide details" : "View details"}
+                </span>
+                <span
+                  className={`${styles.cueIconWrapper} ${mobileDetailsOpen ? styles.cueIconWrapperOpen : ""}`}
+                >
                   <svg
                     className={`${styles.chevronIcon} ${mobileDetailsOpen ? styles.chevronOpen : ""}`}
                     width="12"

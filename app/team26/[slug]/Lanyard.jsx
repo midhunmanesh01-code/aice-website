@@ -2,11 +2,13 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { CARD_HEIGHT, CARD_WIDTH, createCardInk } from './card-ink';
+import { CARD_ASSETS, paintMemberIdCard } from './member-id-card';
 
 import './Lanyard.css';
 
 const CARD_SIZES = {
-  portrait: [1.6, 2.25],
+  portrait: [(2.25 * CARD_WIDTH) / CARD_HEIGHT, 2.25],
   landscape: [2.25, 1.6]
 };
 const ANCHORS = { left: 0.27, center: 0.5, right: 0.73 };
@@ -23,7 +25,7 @@ const RING_RADIUS = 0.095;
 const RING_TUBE = 0.0135;
 const EYELET_RADIUS = 0.036;
 const CLAMP_BODY = 0.15;
-const FACE_WIDTH = 1024;
+const FACE_WIDTH = CARD_WIDTH * 2;
 
 const FINISHES = {
   glossy: { roughness: 0.42, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.06, foil: 0, anisotropy: 0 },
@@ -204,31 +206,12 @@ const loadImage = (cache, url) => {
   if (cached) return cached;
   const promise = new Promise(resolve => {
     const image = new Image();
-    const isExternal =
-      /^https?:\/\//i.test(url) &&
-      (typeof window === 'undefined' || !url.startsWith(window.location.origin));
-
-    if (isExternal) {
-      image.crossOrigin = 'anonymous';
-    }
+    // The card is uploaded as a WebGL texture, so its canvas must stay origin-clean.
+    image.crossOrigin = 'anonymous';
     image.decoding = 'async';
     image.onload = () => resolve(image);
-    image.onerror = (err) => {
-      // If loading with crossOrigin failed, retry without crossOrigin
-      if (image.crossOrigin) {
-        const retry = new Image();
-        retry.decoding = 'async';
-        retry.onload = () => resolve(retry);
-        retry.onerror = () => resolve(null);
-        retry.src = url;
-      } else {
-        resolve(null);
-      }
-    };
+    image.onerror = () => resolve(null);
     image.src = url;
-    if (image.complete && image.naturalWidth > 0) {
-      resolve(image);
-    }
   });
   cache.set(url, promise);
   return promise;
@@ -237,7 +220,9 @@ const loadImage = (cache, url) => {
 const cardLayout = (orientation, cornerRadius) => {
   const [width, height] = CARD_SIZES[orientation] || CARD_SIZES.portrait;
   const radius = mix(0.03, Math.min(width, height) * 0.2, clamp(cornerRadius, 0, 1));
-  const slot = { width: 0.34, height: 0.07, y: height / 2 - 0.13 };
+  const slot = orientation === 'portrait'
+    ? { width: (width * 109) / CARD_WIDTH, height: (height * 22) / CARD_HEIGHT, y: height / 2 - (height * 52) / CARD_HEIGHT }
+    : { width: 0.34, height: 0.07, y: height / 2 - 0.13 };
   const ringY = height / 2 - 0.055;
   return { width, height, radius, slot, ringY, hangY: ringY + RING_RADIUS };
 };
@@ -315,7 +300,7 @@ const buildBandGeometry = count => {
   return geometry;
 };
 
-const buildEnvironment = renderer => {
+const buildEnvironment = (renderer, size) => {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0.035, 0.035, 0.04);
   const geometry = new THREE.PlaneGeometry(1, 1);
@@ -342,7 +327,7 @@ const buildEnvironment = renderer => {
   panel(0.5, [0, -7, 1], [16, 6]);
   panel(0.9, [8, 0, -2], [4, 10]);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const target = pmrem.fromScene(scene, 0.035);
+  const target = pmrem.fromScene(scene, 0.035, 0.1, 100, { size });
   pmrem.dispose();
   geometry.dispose();
   materials.forEach(material => material.dispose());
@@ -353,43 +338,6 @@ const makeCanvasTexture = (canvas, anisotropy) => {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = anisotropy;
-  return texture;
-};
-
-const buildGrainTexture = () => {
-  const size = 128;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-  const random = seeded(7);
-  const field = Float32Array.from({ length: size * size }, () => random());
-  const height = (x, y) => {
-    let sum = 0;
-    for (let j = -1; j <= 1; j++) {
-      for (let i = -1; i <= 1; i++) sum += field[((y + j + size) % size) * size + ((x + i + size) % size)];
-    }
-    return (sum / 9) * 1.6;
-  };
-  const image = ctx.createImageData(size, size);
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const nx = height((x - 1 + size) % size, y) - height((x + 1) % size, y);
-      const ny = height(x, (y - 1 + size) % size) - height(x, (y + 1) % size);
-      const length = Math.hypot(nx, ny, 1);
-      const i = (y * size + x) * 4;
-      image.data[i] = ((nx / length) * 0.5 + 0.5) * 255;
-      image.data[i + 1] = ((ny / length) * 0.5 + 0.5) * 255;
-      image.data[i + 2] = ((1 / length) * 0.5 + 0.5) * 255;
-      image.data[i + 3] = 255;
-    }
-  }
-  ctx.putImageData(image, 0, 0);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(5, 7);
   return texture;
 };
 
@@ -434,24 +382,6 @@ const buildWeaveTexture = () => {
   texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
-};
-
-const drawFitted = (ctx, image, width, height, fit) => {
-  const imgW = image.naturalWidth || image.width;
-  const imgH = image.naturalHeight || image.height;
-  if (!imgW || !imgH) return;
-  const scale = (fit === 'contain' ? Math.min : Math.max)(width / imgW, height / imgH);
-  const w = imgW * scale;
-  const h = imgH * scale;
-  ctx.drawImage(image, (width - w) / 2, (height - h) / 2, w, h);
-};
-
-const paintFace = (canvas, image, color, fit) => {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  ctx.fillStyle = toCss(color);
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  if (image) drawFitted(ctx, image, canvas.width, canvas.height, fit);
 };
 
 const paintStrap = (canvas, image, color) => {
@@ -735,9 +665,9 @@ const stepSimulation = (sim, dt, physics, time) => {
 };
 
 const Lanyard = ({
-  frontImage,
-  backImage,
-  imageFit = 'cover',
+  member,
+  fontFamily,
+  cutoutUrl,
   cardColor = '#ffffff',
   orientation = 'portrait',
   finish = 'glossy',
@@ -745,6 +675,7 @@ const Lanyard = ({
   size = 0.6,
   anchor = 'center',
   strapLength = 0.5,
+  bottomInset,
   strapImage,
   strapColor = '#111111',
   strapWidth = 0.65,
@@ -753,6 +684,7 @@ const Lanyard = ({
   damping = 0.5,
   elasticity = 0.5,
   breeze = 0.5,
+  active = true,
   interactive = true,
   intro = true,
   className = '',
@@ -762,36 +694,38 @@ const Lanyard = ({
   const settingsRef = useRef(null);
   const applyRef = useRef(null);
 
-  settingsRef.current = {
-    frontImage,
-    backImage,
-    imageFit: imageFit === 'contain' ? 'contain' : 'cover',
-    cardColor,
-    orientation: orientation === 'landscape' ? 'landscape' : 'portrait',
-    finish,
-    cornerRadius,
-    size,
-    anchor,
-    strapLength,
-    strapImage,
-    strapColor,
-    strapWidth,
-    metal,
-    gravity,
-    damping,
-    elasticity,
-    breeze,
-    interactive,
-    intro
-  };
-
   useEffect(() => {
+    settingsRef.current = {
+      member,
+      fontFamily,
+      cutoutUrl,
+      cardColor,
+      orientation: orientation === 'landscape' ? 'landscape' : 'portrait',
+      finish,
+      cornerRadius,
+      size,
+      anchor,
+      strapLength,
+      bottomInset,
+      strapImage,
+      strapColor,
+      strapWidth,
+      metal,
+      gravity,
+      damping,
+      elasticity,
+      breeze,
+      active,
+      interactive,
+      intro
+    };
     applyRef.current?.();
   });
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return undefined;
+    const touchDevice = window.matchMedia('(pointer: coarse)').matches;
 
     let renderer;
     try {
@@ -808,10 +742,12 @@ const Lanyard = ({
     canvas.setAttribute('aria-hidden', 'true');
     canvas.style.pointerEvents = 'none';
     container.appendChild(canvas);
+    const cardPrint = createCardInk();
+    container.appendChild(cardPrint.ink);
 
     const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     const scene = new THREE.Scene();
-    const environment = buildEnvironment(renderer);
+    const environment = buildEnvironment(renderer, touchDevice ? 128 : 256);
     scene.environment = environment.texture;
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 200);
     const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -821,20 +757,13 @@ const Lanyard = ({
     scene.add(keyLight, fillLight);
 
     const imageCache = new Map();
-    const images = { front: null, back: null, strap: null };
-    const frontCanvas = document.createElement('canvas');
-    frontCanvas.width = FACE_WIDTH;
-    frontCanvas.height = Math.round((FACE_WIDTH * 2.25) / 1.6);
-    const backCanvas = document.createElement('canvas');
-    backCanvas.width = FACE_WIDTH;
-    backCanvas.height = Math.round((FACE_WIDTH * 2.25) / 1.6);
+    const images = { portrait: null, paper: null, trim: null, strap: null };
+    const faceCanvas = document.createElement('canvas');
     const strapCanvas = document.createElement('canvas');
-    const frontTexture = makeCanvasTexture(frontCanvas, anisotropy);
-    const backTexture = makeCanvasTexture(backCanvas, anisotropy);
+    const faceTexture = makeCanvasTexture(faceCanvas, anisotropy);
     const strapTexture = makeCanvasTexture(strapCanvas, anisotropy);
     strapTexture.wrapS = THREE.ClampToEdgeWrapping;
     strapTexture.wrapT = THREE.RepeatWrapping;
-    const grain = buildGrainTexture();
     const weave = buildWeaveTexture();
     const foilUniforms = {
       foilStrength: { value: 0 },
@@ -853,16 +782,17 @@ const Lanyard = ({
         .replace('#include <opaque_fragment>', `${FOIL_FRAGMENT_BODY}\n#include <opaque_fragment>`);
     };
 
-    const frontMaterial = new THREE.MeshPhysicalMaterial({
-      map: frontTexture,
-      normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06)
-    });
-    const backMaterial = new THREE.MeshPhysicalMaterial({
-      map: backTexture,
-      normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06)
-    });
+    // Let the printed artwork carry most of its own color while retaining a little 3D lighting.
+    const printedFace = {
+      map: faceTexture,
+      color: 0x777777,
+      emissive: 0xffffff,
+      emissiveMap: faceTexture,
+      emissiveIntensity: 0.8,
+      toneMapped: false
+    };
+    const frontMaterial = new THREE.MeshPhysicalMaterial(printedFace);
+    const backMaterial = new THREE.MeshPhysicalMaterial(printedFace);
     frontMaterial.onBeforeCompile = injectFoil;
     backMaterial.onBeforeCompile = injectFoil;
     const edgeMaterial = new THREE.MeshPhysicalMaterial();
@@ -905,6 +835,7 @@ const Lanyard = ({
     const tuck = new THREE.Vector3();
     const curve = new THREE.CatmullRomCurve3(controls, false, 'centripetal');
     const view = { width: 1, height: 1 };
+    let drawingRatio = 0;
     let layout = cardLayout('portrait', 0.3);
     let applied = {};
     let strapScale = STRAP_WIDTH;
@@ -917,27 +848,29 @@ const Lanyard = ({
     let placed = false;
     let hovering = false;
     let press = null;
-    let imageToken = 0;
-    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    let simulating = false;
+    let faceDirty = true;
+    const ambientMotion = !touchDevice && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const paintFaces = () => {
       const s = settingsRef.current;
-      const color = parseColor(s.cardColor, [1, 1, 1]);
-      const width = FACE_WIDTH;
-      const height = Math.round((FACE_WIDTH * layout.height) / layout.width);
-      if (frontCanvas.width !== width || frontCanvas.height !== height) {
-        frontCanvas.width = width;
-        frontCanvas.height = height;
-        backCanvas.width = width;
-        backCanvas.height = height;
+      const maxTextureSize = renderer.capabilities.maxTextureSize;
+      const aspect = layout.width / layout.height;
+      const targetWidth = touchDevice ? Math.round(CARD_WIDTH * 1.25) : FACE_WIDTH;
+      const width = Math.min(targetWidth, maxTextureSize, Math.floor(maxTextureSize * aspect));
+      const height = Math.round(width / aspect);
+      if (faceCanvas.width !== width || faceCanvas.height !== height) {
+        faceCanvas.width = width;
+        faceCanvas.height = height;
       }
-      paintFace(frontCanvas, images.front, color, s.imageFit);
-      paintFace(backCanvas, images.back || images.front, color, s.imageFit);
-      frontTexture.needsUpdate = true;
-      backTexture.needsUpdate = true;
-      frontMaterial.needsUpdate = true;
-      backMaterial.needsUpdate = true;
-      start();
+      paintMemberIdCard(faceCanvas, cardPrint.ink, s.member, images, s.fontFamily);
+      faceTexture.needsUpdate = true;
+      faceDirty = false;
+    };
+
+    const invalidateFace = () => {
+      faceDirty = true;
+      requestFrame();
     };
 
     const repaintStrap = () => {
@@ -947,7 +880,7 @@ const Lanyard = ({
       weave.repeat.set(2, 2 * tileRatio);
       strapTexture.needsUpdate = true;
       bandMaterial.needsUpdate = true;
-      start();
+      requestFrame();
     };
 
     const frameView = () => {
@@ -969,15 +902,10 @@ const Lanyard = ({
       const anchorX = (anchorFrac - 0.5) * viewWidth;
       const anchorY = viewHeight / 2 + 0.2;
 
-      let strapFraction = clamp(s.strapLength ?? 0.44, 0, 1);
-      if (aspect < 0.75) {
-        // Moto G Power baseline: height = 823px with strap = 0.08
-        // For taller devices like Realme P4x (873px), scale strap length so the card-to-text gap matches Moto G Power
-        const heightDelta = view.height - 823;
-        strapFraction = clamp(strapFraction + heightDelta * 0.0016, 0.04, 0.35);
-      }
-
-      const cardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction);
+      const strapFraction = clamp(s.strapLength, 0, 1);
+      const cardTop = s.bottomInset === undefined
+        ? viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction)
+        : layout.height - viewHeight / 2 + (s.bottomInset / view.height) * viewHeight;
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       sim.anchor.set(anchorX, anchorY, 0);
       configureSimulation(sim, layout, anchorY - hangTop);
@@ -1003,35 +931,38 @@ const Lanyard = ({
         ring.position.set(0, layout.ringY, 0);
         applied.framingKey = '';
       }
-      const framingKey = `${layoutKey}|${s.size}|${s.anchor}|${s.strapLength}|${view.width}|${view.height}`;
+      const framingKey = `${layoutKey}|${s.size}|${s.anchor}|${s.strapLength}|${s.bottomInset}|${view.width}|${view.height}`;
       if (framingKey !== applied.framingKey) {
         frameView();
         if (!placed) {
-          placeHanging(sim, layout, s.intro && !reducedMotion);
+          const animateIntro = s.intro && ambientMotion;
+          placeHanging(sim, layout, animateIntro);
+          if (animateIntro) start();
           placed = true;
-        } else if (layoutKey !== applied.layoutKey) {
+        } else if (layoutKey !== applied.layoutKey || !simulating) {
           placeHanging(sim, layout, false);
         }
       }
 
-      const imageKey = `${s.frontImage}|${s.backImage}|${s.strapImage}`;
-      if (imageKey !== applied.imageKey) {
-        const token = ++imageToken;
-        Promise.all([
-          loadImage(imageCache, s.frontImage),
-          loadImage(imageCache, s.backImage),
-          loadImage(imageCache, s.strapImage)
-        ]).then(([front, back, strap]) => {
-          if (!alive || token !== imageToken) return;
-          images.front = front;
-          images.back = back;
+      const portraitKey = JSON.stringify([s.cutoutUrl, s.member.image]);
+      if (portraitKey !== applied.portraitKey) {
+        images.portrait = null;
+        loadImage(imageCache, s.cutoutUrl).then(async cutout => {
+          const image = cutout || await loadImage(imageCache, s.member.image);
+          if (!alive || portraitKey !== applied.portraitKey) return;
+          images.portrait = image ? { image, cutout: Boolean(cutout) } : null;
+          invalidateFace();
+        });
+      }
+      if (s.strapImage !== applied.strapImage) {
+        loadImage(imageCache, s.strapImage).then(strap => {
+          if (!alive || s.strapImage !== applied.strapImage) return;
           images.strap = strap;
-          paintFaces();
           repaintStrap();
         });
       }
-      const faceKey = `${layoutKey}|${s.cardColor}|${s.imageFit}`;
-      if (faceKey !== applied.faceKey) paintFaces();
+      const faceKey = JSON.stringify([layoutKey, portraitKey, s.fontFamily, s.member.name, s.member.role, s.member.category]);
+      if (faceKey !== applied.faceKey) invalidateFace();
       if (s.strapColor !== applied.strapColor) repaintStrap();
 
       const finish = FINISHES[s.finish] || FINISHES.glossy;
@@ -1060,8 +991,10 @@ const Lanyard = ({
       }
       canvas.style.touchAction = s.interactive ? 'pan-y' : 'auto';
 
-      applied = { layoutKey, framingKey, imageKey, faceKey, strapColor: s.strapColor, strapScale };
-      start();
+      applied = { layoutKey, framingKey, portraitKey, faceKey, strapImage: s.strapImage, strapColor: s.strapColor, strapScale };
+      if (!s.active) pause();
+      else if (ambientMotion && s.breeze > 0) start();
+      else requestFrame();
     };
 
     const points = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
@@ -1148,6 +1081,7 @@ const Lanyard = ({
       cardGroup.quaternion.copy(sim.body.quaternion);
       updateBand();
       renderer.render(scene, camera);
+      cardPrint.project(camera, frontMesh, backMesh, layout, view);
     };
 
     const physics = () => {
@@ -1173,33 +1107,48 @@ const Lanyard = ({
         twistDamping: 3,
         grip: 40,
         gripDamping: 6,
-        breeze: reducedMotion ? 0 : clamp(s.breeze, 0, 1)
+        breeze: ambientMotion ? clamp(s.breeze, 0, 1) : 0
       };
     };
 
+    const canRender = () => alive && visible && settingsRef.current.active && !document.hidden;
+
     const tick = now => {
       raf = 0;
-      if (!alive) return;
-      const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000));
-      last = now;
-      time += dt;
-      const current = physics();
-      stepSimulation(sim, dt, current, time);
-      const body = sim.body;
-      if (!Number.isFinite(body.position.x + body.position.y + body.position.z + body.quaternion.w)) {
-        sim.grab = null;
-        placeHanging(sim, layout, false);
+      if (!canRender()) return;
+      if (simulating) {
+        const dt = Math.min(1 / 30, Math.max(1 / 240, (now - last) / 1000));
+        last = now;
+        time += dt;
+        const current = physics();
+        stepSimulation(sim, dt, current, time);
+        const body = sim.body;
+        if (!Number.isFinite(body.position.x + body.position.y + body.position.z + body.quaternion.w)) {
+          sim.grab = null;
+          placeHanging(sim, layout, false);
+        }
+        simulating = sim.calm <= 1.2 || Boolean(sim.grab) || current.breeze > 0;
       }
+      if (faceDirty) paintFaces();
       render();
-      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0;
-      if (visible && !resting) raf = requestAnimationFrame(tick);
+      if (simulating) raf = requestAnimationFrame(tick);
+    };
+
+    const requestFrame = () => {
+      if (raf || !canRender()) return;
+      last = performance.now();
+      raf = requestAnimationFrame(tick);
     };
 
     const start = () => {
-      if (raf || !visible || !alive) return;
-      sim.calm = 0;
-      last = performance.now();
-      raf = requestAnimationFrame(tick);
+      if (!simulating) sim.calm = 0;
+      simulating = true;
+      requestFrame();
+    };
+
+    const pause = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
     };
 
     const raycaster = new THREE.Raycaster();
@@ -1401,32 +1350,50 @@ const Lanyard = ({
     canvas.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     const resize = () => {
-      view.width = Math.max(1, container.clientWidth);
-      view.height = Math.max(1, container.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setSize(view.width, view.height, false);
+      if (!settingsRef.current.active) return;
+      const width = Math.max(1, container.clientWidth);
+      const height = Math.max(1, container.clientHeight);
+      const pixelBudget = touchDevice ? 1_100_000 : 6_000_000;
+      const maxRatio = Math.max(1, Math.sqrt(pixelBudget / (width * height)));
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, touchDevice ? 1.5 : 2.5, maxRatio);
+      if (width === view.width && height === view.height && pixelRatio === drawingRatio) return;
+      view.width = width;
+      view.height = height;
+      drawingRatio = pixelRatio;
+      renderer.setDrawingBufferSize(width, height, pixelRatio);
       apply();
-      render();
     };
 
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(container);
     const intersectionObserver = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      if (visible) start();
+      if (visible) requestFrame();
+      else pause();
     });
     intersectionObserver.observe(container);
     const onVisibility = () => {
-      if (!document.hidden) start();
+      if (document.hidden) pause();
+      else requestFrame();
     };
     document.addEventListener('visibilitychange', onVisibility);
 
     applyRef.current = apply;
     resize();
+    Promise.all(Object.entries(CARD_ASSETS).map(async ([key, url]) => [key, await loadImage(imageCache, url)]))
+      .then(art => {
+        if (!alive) return;
+        Object.assign(images, Object.fromEntries(art));
+        invalidateFace();
+      });
+    const { fontFamily } = settingsRef.current;
+    Promise.all([600, 700].map(weight => document.fonts.load(`${weight} 27px ${fontFamily}`)))
+      .then(() => { if (alive) invalidateFace(); })
+      .catch(() => { /* The lettering already uses fallback fonts. */ });
 
     return () => {
       alive = false;
-      cancelAnimationFrame(raf);
+      pause();
       applyRef.current = null;
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
@@ -1446,10 +1413,11 @@ const Lanyard = ({
       canvas.removeEventListener('touchcancel', onTouchEnd);
       [bodyMesh, frontMesh, backMesh, ring, clampMesh, eyelet, band].forEach(mesh => mesh.geometry?.dispose());
       [frontMaterial, backMaterial, edgeMaterial, metalMaterial, bandMaterial].forEach(material => material.dispose());
-      [frontTexture, backTexture, strapTexture, grain, weave].forEach(texture => texture.dispose());
+      [faceTexture, strapTexture, weave].forEach(texture => texture.dispose());
       environment.dispose();
       renderer.dispose();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      cardPrint.ink.remove();
     };
   }, []);
 

@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Syne, Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
-import {
-  getMemberBySlug,
-  getAllMemberSlugs,
-  getAllMembers,
-} from "@/lib/team-members";
+import localFont from "next/font/local";
+import cardPortraits from "@/data/team-26/card-portraits.json";
+import { getMemberBySlug, getAllMemberSlugs } from "@/lib/team-members";
 import MemberProfile from "./MemberProfile";
 
 const syne = Syne({
@@ -35,6 +33,14 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+
+const cardFont = localFont({
+  src: "./fonts/montserrat-latin.woff2",
+  weight: "500 700",
+  display: "swap",
+});
+const portraitsBySource: Readonly<Partial<Record<string, string>>> =
+  cardPortraits.filesBySource;
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>;
@@ -90,9 +96,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function MemberProfilePage({
-  params,
-}: ProfilePageProps) {
+export default async function MemberProfilePage({ params }: ProfilePageProps) {
   const { slug } = await params;
   const member = getMemberBySlug(slug);
 
@@ -100,13 +104,19 @@ export default async function MemberProfilePage({
     notFound();
   }
 
-  const allMembers = getAllMembers();
+  const portraitFile = portraitsBySource[member.image];
+  const cutoutUrl =
+    portraitFile && new URL(portraitFile, cardPortraits.baseUrl).href;
 
   return (
     <div
       className={`${syne.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable}`}
     >
-      <MemberProfile member={member} allMembers={allMembers} />
+      <MemberProfile
+        member={member}
+        cardFontFamily={cardFont.style.fontFamily}
+        cardCutout={cutoutUrl}
+      />
     </div>
   );
 }
