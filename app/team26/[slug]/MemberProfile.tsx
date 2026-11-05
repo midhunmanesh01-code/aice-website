@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore, useCallback } from "react";
+import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
 import { preconnect, preload } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
@@ -283,12 +283,39 @@ export default function MemberProfile({
 
   const shouldReduceMotion = useReducedMotion();
   const isDesktop = useIsDesktop();
+  const isDesktopView =
+    typeof window !== "undefined"
+      ? window.matchMedia("(min-width: 961px)").matches
+      : isDesktop;
 
-  // Share profile card modal state
+    // Share profile card modal state
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
   // Mobile toggle details handler
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+
+  // Dynamic mobile bottom inset so the card hangs cleanly above the profile text
+  const [mobileBottomInset, setMobileBottomInset] = useState<number>(275);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const updateInset = () => {
+      if (window.innerWidth > 960 || mobileDetailsOpen) return;
+      const hero = document.getElementById("initial-hero-block");
+      if (hero) {
+        const rect = hero.getBoundingClientRect();
+        // Distance from bottom of viewport to the top of the bio block ("• WEBMASTER") + breathing buffer
+        const distFromBottom = Math.round(window.innerHeight - rect.top + 32);
+        if (distFromBottom > 160 && distFromBottom < 480) {
+          setMobileBottomInset(distFromBottom);
+        }
+      }
+    };
+
+    updateInset();
+    window.addEventListener("resize", updateInset);
+    return () => window.removeEventListener("resize", updateInset);
+  }, [mobileDetailsOpen]);
 
   const handleToggleDetails = useCallback(() => {
     setMobileDetailsOpen((prev) => {
@@ -378,40 +405,43 @@ export default function MemberProfile({
         className={styles.mainStage}
         aria-label="Member Profile Information"
       >
+        {/* Fullscreen 3D Lanyard Layer — Spans 100% full screen, zero bounding box clipping! */}
+        <div
+          className={`${styles.lanyardLayer} ${mobileDetailsOpen ? styles.lanyardLayerDetailsOpen : ""}`}
+          aria-label={`ID card for ${member.name}`}
+        >
+          <Lanyard
+            member={member}
+            fontFamily={cardFontFamily}
+            cutoutUrl={cardCutout}
+            strapImage={isDesktopView ? "/logos/aice_logo.png" : undefined}
+            cardColor="#f8f8f8"
+            orientation="portrait"
+            finish="matte"
+            cornerRadius={0.16}
+            size={isDesktopView ? 0.64 : 0.72}
+            anchor={isDesktopView ? 0.27 : "center"}
+            strapLength={0.44}
+            bottomInset={isDesktopView ? undefined : mobileBottomInset}
+            strapColor="#111111"
+            strapWidth={0.65}
+            metal="silver"
+            gravity={1}
+            damping={0.5}
+            elasticity={0.5}
+            breeze={0.5}
+            active={true}
+            interactive={isDesktopView || !mobileDetailsOpen}
+            intro={true}
+          />
+        </div>
+
+        {/* Foreground Responsive Grid: Left empty anchor for 3D card physics, Right for typography */}
         <div className={styles.contentGrid}>
           <div
             className={`${styles.cardAnchorArea} ${mobileDetailsOpen ? styles.cardAnchorAreaDetailsOpen : ""}`}
-          >
-            <div
-              className={`${styles.lanyardLayer} ${mobileDetailsOpen ? styles.lanyardLayerDetailsOpen : ""}`}
-              aria-label={`ID card for ${member.name}`}
-            >
-              <Lanyard
-                member={member}
-                fontFamily={cardFontFamily}
-                cutoutUrl={cardCutout}
-                strapImage={isDesktop ? "/logos/aice_logo.png" : undefined}
-                cardColor="#f8f8f8"
-                orientation="portrait"
-                finish="matte"
-                cornerRadius={0.16}
-                size={isDesktop ? 0.64 : 0.8}
-                anchor={isDesktop ? 0.27 : "center"}
-                strapLength={0.44}
-                bottomInset={isDesktop ? undefined : 8}
-                strapColor="#111111"
-                strapWidth={0.65}
-                metal="silver"
-                gravity={1}
-                damping={0.5}
-                elasticity={0.5}
-                breeze={0.5}
-                active={isDesktop || !mobileDetailsOpen}
-                interactive={isDesktop || !mobileDetailsOpen}
-                intro={true}
-              />
-            </div>
-          </div>
+            aria-hidden="true"
+          />
 
           {/* Right Column: Member Details */}
           <motion.div

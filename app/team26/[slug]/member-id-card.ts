@@ -26,6 +26,44 @@ const categoryLabels = {
 const PORTRAIT_TOP = 250;
 const portraitEdges = new WeakMap<HTMLImageElement, number[]>();
 
+interface CutoutParams {
+  sx?: number;
+  sy?: number;
+  sw?: number;
+  sh?: number;
+  dx: number;
+  dy: number;
+  dw: number;
+  dh: number;
+}
+
+function getCutoutParams(
+  image: HTMLImageElement,
+  cardWidth: number,
+  cardHeight: number,
+  portraitTop: number,
+): CutoutParams {
+  // If the cutout is Midhun Manesh's custom-edited portrait from the CDN (756x1004)
+  // Matched exactly to his official physical ID card
+  if (image.naturalWidth === 756 && image.naturalHeight === 1004) {
+    return {
+      dx: 141,
+      dy: 7,
+      dw: 831,
+      dh: 1103,
+    };
+  }
+
+  // Standard 960x1134 and other full-card cutouts
+  return {
+    dx: 0,
+    dy: portraitTop,
+    dw: cardWidth,
+    dh: cardHeight - portraitTop,
+  };
+}
+
+
 function getPortraitEdge(image: HTMLImageElement, top: number, bottom: number) {
   const step = 4;
   let edges = portraitEdges.get(image);
@@ -35,7 +73,22 @@ function getPortraitEdge(image: HTMLImageElement, top: number, bottom: number) {
     sample.height = Math.ceil((CARD_HEIGHT - PORTRAIT_TOP) / step);
     const ctx = sample.getContext("2d", { willReadFrequently: true });
     if (!ctx) return CARD_WIDTH;
-    ctx.drawImage(image, 0, 0, sample.width, sample.height);
+    const p = getCutoutParams(image, CARD_WIDTH, CARD_HEIGHT, PORTRAIT_TOP);
+    if (p.sx !== undefined) {
+      ctx.drawImage(
+        image,
+        p.sx,
+        p.sy!,
+        p.sw!,
+        p.sh!,
+        p.dx / step,
+        (p.dy - PORTRAIT_TOP) / step,
+        p.dw / step,
+        p.dh / step,
+      );
+    } else {
+      ctx.drawImage(image, 0, 0, sample.width, sample.height);
+    }
     const { data } = ctx.getImageData(0, 0, sample.width, sample.height);
     edges = Array.from({ length: sample.height }, (_, y) => {
       let x = 0;
@@ -112,13 +165,28 @@ function paintPortrait(
 
   if (cutout) {
     // Cutouts are composed from the original Execom photos in the card's coordinate space.
-    ctx.drawImage(
-      image,
-      offset,
-      PORTRAIT_TOP,
-      CARD_WIDTH,
-      CARD_HEIGHT - PORTRAIT_TOP,
-    );
+    const p = getCutoutParams(image, CARD_WIDTH, CARD_HEIGHT, PORTRAIT_TOP);
+    if (p.sx !== undefined) {
+      ctx.drawImage(
+        image,
+        p.sx,
+        p.sy!,
+        p.sw!,
+        p.sh!,
+        p.dx + offset,
+        p.dy,
+        p.dw,
+        p.dh,
+      );
+    } else {
+      ctx.drawImage(
+        image,
+        p.dx + offset,
+        p.dy,
+        p.dw,
+        p.dh,
+      );
+    }
     return;
   }
 

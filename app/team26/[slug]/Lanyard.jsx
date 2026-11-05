@@ -850,7 +850,8 @@ const Lanyard = ({
     let press = null;
     let simulating = false;
     let faceDirty = true;
-    const ambientMotion = !touchDevice && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ambientMotion = !touchDevice && !reducedMotion;
 
     const paintFaces = () => {
       const s = settingsRef.current;
@@ -907,10 +908,28 @@ const Lanyard = ({
         ? viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction)
         : layout.height - viewHeight / 2 + (s.bottomInset / view.height) * viewHeight;
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
+      const prevAnchorX = sim.anchor.x;
+      const prevAnchorY = sim.anchor.y;
       sim.anchor.set(anchorX, anchorY, 0);
       configureSimulation(sim, layout, anchorY - hangTop);
       sim.nodes[0].copy(sim.anchor);
       sim.previous[0].copy(sim.anchor);
+      if (placed) {
+        const dx = anchorX - prevAnchorX;
+        const dy = anchorY - prevAnchorY;
+        if (Math.abs(dx) > 1e-4 || Math.abs(dy) > 1e-4) {
+          for (let i = 1; i <= JOINTS; i++) {
+            sim.nodes[i].x += dx;
+            sim.nodes[i].y += dy;
+            sim.previous[i].x += dx;
+            sim.previous[i].y += dy;
+          }
+          sim.body.position.x += dx;
+          sim.body.position.y += dy;
+          sim.body.previous.x += dx;
+          sim.body.previous.y += dy;
+        }
+      }
     };
 
     const apply = () => {
@@ -935,7 +954,7 @@ const Lanyard = ({
       if (framingKey !== applied.framingKey) {
         frameView();
         if (!placed) {
-          const animateIntro = s.intro && ambientMotion;
+          const animateIntro = s.intro && !reducedMotion;
           placeHanging(sim, layout, animateIntro);
           if (animateIntro) start();
           placed = true;
@@ -1353,6 +1372,7 @@ const Lanyard = ({
       if (!settingsRef.current.active) return;
       const width = Math.max(1, container.clientWidth);
       const height = Math.max(1, container.clientHeight);
+      if (height < 160 || width < 160) return;
       const pixelBudget = touchDevice ? 1_100_000 : 6_000_000;
       const maxRatio = Math.max(1, Math.sqrt(pixelBudget / (width * height)));
       const pixelRatio = Math.min(window.devicePixelRatio || 1, touchDevice ? 1.5 : 2.5, maxRatio);
