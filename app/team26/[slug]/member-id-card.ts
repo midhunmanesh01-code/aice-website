@@ -54,6 +54,50 @@ function getCutoutParams(
     };
   }
 
+  // If the cutout is Aiswarya Rose Jacob's official ID card portrait (2044x3608)
+  // Matched exactly to her official physical ID card
+  if (
+    (image.naturalWidth === 2044 && image.naturalHeight === 3608) ||
+    image.src.includes("aiswarya-rose-jacob")
+  ) {
+    return {
+      dx: 190,
+      dy: 176,
+      dw: 521,
+      dh: 920,
+    };
+  }
+
+  // If the cutout is Nikhitha Rajeev's official ID card portrait (2800x3388)
+  // Matched exactly to her official physical ID card
+  if (
+    (image.naturalWidth === 2800 && image.naturalHeight === 3388) ||
+    image.src.includes("nikhitha-rajeev") ||
+    image.src.includes("nikitha_rajeev")
+  ) {
+    return {
+      dx: 156.5,
+      dy: 328.5,
+      dw: 700,
+      dh: 847,
+    };
+  }
+
+  // If the cutout is Elsa V Perayil's official ID card portrait (2462x3235)
+  // Matched exactly to her official physical ID card
+  if (
+    (image.naturalWidth === 2462 && image.naturalHeight === 3235) ||
+    image.src.includes("elsa-v-perayil") ||
+    image.src.includes("elsa.webp")
+  ) {
+    return {
+      dx: 198,
+      dy: 280,
+      dw: 615.5,
+      dh: 808.75,
+    };
+  }
+
   // Standard 960x1134 and other full-card cutouts
   return {
     dx: 0,
@@ -87,7 +131,13 @@ function getPortraitEdge(image: HTMLImageElement, top: number, bottom: number) {
         p.dh / step,
       );
     } else {
-      ctx.drawImage(image, 0, 0, sample.width, sample.height);
+      ctx.drawImage(
+        image,
+        p.dx / step,
+        (p.dy - PORTRAIT_TOP) / step,
+        p.dw / step,
+        p.dh / step,
+      );
     }
     const { data } = ctx.getImageData(0, 0, sample.width, sample.height);
     edges = Array.from({ length: sample.height }, (_, y) => {
