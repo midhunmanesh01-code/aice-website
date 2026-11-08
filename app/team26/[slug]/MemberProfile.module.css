@@ -731,9 +731,9 @@
     display: block;
     flex: 1;
     height: auto;
-    min-height: clamp(340px, 46svh, 420px);
+    min-height: clamp(200px, 38svh, 420px);
     width: 100%;
-    margin-bottom: clamp(12px, 2svh, 18px);
+    margin-bottom: clamp(10px, 1.8svh, 16px);
     pointer-events: none;
     transition: all 450ms cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -750,7 +750,7 @@
   .cardGroundShadow {
     position: absolute;
     left: 50%;
-    top: clamp(430px, 50vh, 510px);
+    top: clamp(320px, 46svh, 500px);
     bottom: unset;
     transform: translateX(-50%);
     width: 230px;
@@ -764,9 +764,9 @@
 
   .glowCard {
     left: 50%;
-    top: clamp(260px, 34vh, 320px);
-    width: clamp(340px, 80vw, 420px);
-    height: clamp(340px, 80vw, 420px);
+    top: clamp(230px, 32svh, 320px);
+    width: clamp(320px, 78vw, 420px);
+    height: clamp(320px, 78vw, 420px);
     transform: translate(-50%, -50%);
     transition: opacity 300ms ease;
   }

@@ -294,27 +294,54 @@ export default function MemberProfile({
   // Mobile toggle details handler
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
 
-  // Dynamic mobile bottom inset so the card hangs cleanly above the profile text
+  // Dynamic mobile layout: scale and bottom inset adapt across device heights & toolbars
+  const [mobileCardScale, setMobileCardScale] = useState<number>(0.62);
   const [mobileBottomInset, setMobileBottomInset] = useState<number>(275);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const updateInset = () => {
+    const updateLayout = () => {
       if (window.innerWidth > 960 || mobileDetailsOpen) return;
       const hero = document.getElementById("initial-hero-block");
-      if (hero) {
+      const vh = window.innerHeight;
+      if (hero && vh > 0) {
         const rect = hero.getBoundingClientRect();
         // Distance from bottom of viewport to the top of the bio block ("• WEBMASTER") + breathing buffer
-        const distFromBottom = Math.round(window.innerHeight - rect.top + 32);
-        if (distFromBottom > 160 && distFromBottom < 480) {
+        const distFromBottom = Math.round(vh - rect.top + 28);
+        if (distFromBottom > 140 && distFromBottom < 480) {
           setMobileBottomInset(distFromBottom);
         }
+
+        // Available vertical space between navbar (~68px) and top of hero block
+        const navHeight = 68;
+        const availableHeight = Math.max(180, rect.top - navHeight - 16);
+        const targetScale = (availableHeight * 0.92) / vh;
+        const clampedScale = Math.max(
+          0.50,
+          Math.min(0.70, Number(targetScale.toFixed(2)))
+        );
+        setMobileCardScale(clampedScale);
       }
     };
 
-    updateInset();
-    window.addEventListener("resize", updateInset);
-    return () => window.removeEventListener("resize", updateInset);
+    updateLayout();
+    const timer = setTimeout(updateLayout, 150);
+    window.addEventListener("resize", updateLayout);
+
+    let resizeObserver: ResizeObserver | null = null;
+    const hero = document.getElementById("initial-hero-block");
+    if (hero && typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updateLayout();
+      });
+      resizeObserver.observe(hero);
+    }
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateLayout);
+      if (resizeObserver) resizeObserver.disconnect();
+    };
   }, [mobileDetailsOpen]);
 
   const handleToggleDetails = useCallback(() => {
@@ -419,9 +446,9 @@ export default function MemberProfile({
             orientation="portrait"
             finish="matte"
             cornerRadius={0.16}
-            size={isDesktopView ? 0.64 : 0.72}
+            size={isDesktopView ? 0.64 : mobileCardScale}
             anchor={isDesktopView ? 0.27 : "center"}
-            strapLength={0.44}
+            strapLength={isDesktopView ? 0.44 : 0.20}
             bottomInset={isDesktopView ? undefined : mobileBottomInset}
             strapColor="#111111"
             strapWidth={0.65}

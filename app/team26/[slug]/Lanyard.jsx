@@ -904,9 +904,14 @@ const Lanyard = ({
       const anchorY = viewHeight / 2 + 0.2;
 
       const strapFraction = clamp(s.strapLength, 0, 1);
-      const cardTop = s.bottomInset === undefined
-        ? viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction)
+      const naturalCardTop = viewHeight / 2 - viewHeight * mix(0.12, 0.42, strapFraction);
+      const insetCardTop = s.bottomInset === undefined
+        ? naturalCardTop
         : layout.height - viewHeight / 2 + (s.bottomInset / view.height) * viewHeight;
+      const maxAllowedCardTop = anchorY - (layout.hangY - layout.height / 2) - 0.10;
+      const cardTop = s.bottomInset === undefined
+        ? naturalCardTop
+        : Math.min(maxAllowedCardTop, Math.max(naturalCardTop, insetCardTop));
       const hangTop = cardTop + (layout.hangY - layout.height / 2);
       const prevAnchorX = sim.anchor.x;
       const prevAnchorY = sim.anchor.y;
