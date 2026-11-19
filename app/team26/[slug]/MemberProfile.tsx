@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore, useCallback } from "react";
+import { useState, useEffect, useSyncExternalStore, useCallback, useRef } from "react";
 import { preconnect, preload } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import Navbar from "@/app/components/Navbar";
@@ -293,38 +293,55 @@ export default function MemberProfile({
 
   // Mobile toggle details handler
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
+  const mobileDetailsOpenRef = useRef(mobileDetailsOpen);
+  const isTransitioningRef = useRef(false);
+  const pendingResizeRef = useRef(false);
+  const transitionTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    mobileDetailsOpenRef.current = mobileDetailsOpen;
+  }, [mobileDetailsOpen]);
 
   // Dynamic mobile layout: scale and bottom inset adapt across device heights & toolbars
   const [mobileCardScale, setMobileCardScale] = useState<number>(0.62);
   const [mobileBottomInset, setMobileBottomInset] = useState<number>(275);
 
+  const updateLayout = useCallback(() => {
+    if (typeof window === "undefined") return;
+    if (window.innerWidth > 960) return;
+    if (mobileDetailsOpenRef.current || isTransitioningRef.current) {
+      pendingResizeRef.current = true;
+      return;
+    }
+    const hero = document.getElementById("initial-hero-block");
+    const vh = window.innerHeight;
+    if (hero && vh > 0) {
+      const rect = hero.getBoundingClientRect();
+      // Using resting document top (offset by scrollY) prevents viewport scroll from distorting calculation
+      const restingTop = rect.top + window.scrollY;
+      const distFromBottom = Math.round(vh - restingTop + 28);
+      if (distFromBottom > 140 && distFromBottom < 480) {
+        setMobileBottomInset(distFromBottom);
+      }
+
+      // Available vertical space between navbar (~68px) and top of hero block
+      const navHeight = 68;
+      const availableHeight = Math.max(180, restingTop - navHeight - 16);
+      const targetScale = (availableHeight * 0.92) / vh;
+      const clampedScale = Math.max(
+        0.50,
+        Math.min(0.70, Number(targetScale.toFixed(2)))
+      );
+      setMobileCardScale(clampedScale);
+    }
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const updateLayout = () => {
-      if (window.innerWidth > 960 || mobileDetailsOpen) return;
-      const hero = document.getElementById("initial-hero-block");
-      const vh = window.innerHeight;
-      if (hero && vh > 0) {
-        const rect = hero.getBoundingClientRect();
-        // Distance from bottom of viewport to the top of the bio block ("• WEBMASTER") + breathing buffer
-        const distFromBottom = Math.round(vh - rect.top + 28);
-        if (distFromBottom > 140 && distFromBottom < 480) {
-          setMobileBottomInset(distFromBottom);
-        }
 
-        // Available vertical space between navbar (~68px) and top of hero block
-        const navHeight = 68;
-        const availableHeight = Math.max(180, rect.top - navHeight - 16);
-        const targetScale = (availableHeight * 0.92) / vh;
-        const clampedScale = Math.max(
-          0.50,
-          Math.min(0.70, Number(targetScale.toFixed(2)))
-        );
-        setMobileCardScale(clampedScale);
-      }
-    };
-
-    updateLayout();
+    const rafId = requestAnimationFrame(() => {
+      updateLayout();
+    });
     const timer = setTimeout(updateLayout, 150);
     window.addEventListener("resize", updateLayout);
 
@@ -338,15 +355,25 @@ export default function MemberProfile({
     }
 
     return () => {
+      cancelAnimationFrame(rafId);
       clearTimeout(timer);
       window.removeEventListener("resize", updateLayout);
       if (resizeObserver) resizeObserver.disconnect();
+      if (transitionTimerRef.current) {
+        clearTimeout(transitionTimerRef.current);
+      }
     };
-  }, [mobileDetailsOpen]);
+  }, [member.slug, updateLayout]);
 
   const handleToggleDetails = useCallback(() => {
+    if (transitionTimerRef.current) {
+      clearTimeout(transitionTimerRef.current);
+    }
+    isTransitioningRef.current = true;
+
     setMobileDetailsOpen((prev) => {
       const next = !prev;
+      mobileDetailsOpenRef.current = next;
       if (next) {
         setTimeout(() => {
           const el = document.getElementById("extended-details");
@@ -359,7 +386,16 @@ export default function MemberProfile({
       }
       return next;
     });
-  }, []);
+
+    transitionTimerRef.current = setTimeout(() => {
+      isTransitioningRef.current = false;
+      transitionTimerRef.current = null;
+      if (pendingResizeRef.current) {
+        pendingResizeRef.current = false;
+        updateLayout();
+      }
+    }, 500);
+  }, [updateLayout]);
 
   // Framer motion entrance stagger
   const createFadeUp = (index: number) => {
