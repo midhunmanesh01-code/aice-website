@@ -685,7 +685,9 @@
     --profile-bottom-padding: max(24px, env(safe-area-inset-bottom, 0px));
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
     min-height: 100svh;
+    min-height: 100dvh;
     padding: 0 var(--profile-inline-padding) var(--profile-bottom-padding);
     position: relative;
     width: 100%;
@@ -696,8 +698,9 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 100svh;
-    max-height: 100svh;
+    height: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
     bottom: unset;
     width: 100%;
     z-index: 5;
@@ -719,11 +722,18 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    min-height: calc(100vh - var(--profile-bottom-padding));
     min-height: calc(100svh - var(--profile-bottom-padding));
+    min-height: calc(100dvh - var(--profile-bottom-padding));
     width: 100%;
     gap: 0;
     position: relative;
     z-index: 2;
+  }
+
+  .contentGrid.contentGridDetailsOpen {
+    justify-content: flex-start;
+    min-height: auto;
   }
 
   /* The lanyard and profile text share the available viewport in normal flow. */
@@ -731,7 +741,7 @@
     display: block;
     flex: 1;
     height: auto;
-    min-height: clamp(200px, 38svh, 420px);
+    min-height: clamp(180px, 36svh, 420px);
     width: 100%;
     margin-bottom: clamp(10px, 1.8svh, 16px);
     pointer-events: none;
@@ -750,11 +760,20 @@
   .cardGroundShadow {
     position: absolute;
     left: 50%;
-    top: clamp(320px, 46svh, 500px);
-    bottom: unset;
+    top: unset;
+    bottom: calc(var(--card-bottom-inset, 275px) - 10px);
     transform: translateX(-50%);
-    width: 230px;
-    height: 26px;
+    width: clamp(180px, 48vw, 240px);
+    height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.6) 0%,
+      transparent 72%
+    );
+    filter: blur(12px);
+    pointer-events: none;
+    z-index: 1;
     transition: opacity 300ms ease;
   }
 
@@ -764,9 +783,9 @@
 
   .glowCard {
     left: 50%;
-    top: clamp(230px, 32svh, 320px);
-    width: clamp(320px, 78vw, 420px);
-    height: clamp(320px, 78vw, 420px);
+    top: clamp(200px, 28svh, 300px);
+    width: clamp(280px, 76vw, 420px);
+    height: clamp(280px, 76vw, 420px);
     transform: translate(-50%, -50%);
     transition: opacity 300ms ease;
   }
@@ -789,6 +808,7 @@
 
   .detailsColumn.detailsColumnDetailsOpen {
     margin-top: 0;
+    flex: 1;
   }
 
   /* Seated cleanly at the bottom of the initial mobile screen */
@@ -810,7 +830,7 @@
 
   .initialHeroBlock.heroBlockDetailsOpen {
     margin-top: 0;
-    padding: 24px 0 10px;
+    padding: calc(var(--nav-height, 72px) + 16px) 0 10px;
   }
 
   .tagRow {
@@ -964,6 +984,7 @@
     display: grid;
     grid-template-rows: 0fr;
     opacity: 0;
+    scroll-margin-top: calc(var(--nav-height, 72px) + 16px);
     transition:
       grid-template-rows 450ms cubic-bezier(0.16, 1, 0.3, 1),
       opacity 350ms ease;
@@ -984,7 +1005,7 @@
     flex-direction: column;
     gap: 20px;
     padding-top: 24px;
-    padding-bottom: 8px;
+    padding-bottom: max(32px, calc(env(safe-area-inset-bottom, 0px) + 20px));
   }
 }
 
@@ -1103,6 +1124,25 @@
     flex: 1 1 50%;
     justify-content: center;
     min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .socialPillButton {
+    padding: 0 12px;
+    font-size: 12.5px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 330px) {
+  .socialButtonGroup {
+    flex-direction: column;
+  }
+
+  .socialButtonGroup > * {
+    flex: 1 1 100%;
+    width: 100%;
   }
 }
 

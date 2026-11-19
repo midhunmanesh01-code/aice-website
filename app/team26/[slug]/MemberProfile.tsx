@@ -303,7 +303,7 @@ export default function MemberProfile({
   }, [mobileDetailsOpen]);
 
   // Dynamic mobile layout: scale and bottom inset adapt across device heights & toolbars
-  const [mobileCardScale, setMobileCardScale] = useState<number>(0.62);
+  const [mobileCardScale, setMobileCardScale] = useState<number>(0.55);
   const [mobileBottomInset, setMobileBottomInset] = useState<number>(275);
 
   const updateLayout = useCallback(() => {
@@ -320,17 +320,18 @@ export default function MemberProfile({
       // Using resting document top (offset by scrollY) prevents viewport scroll from distorting calculation
       const restingTop = rect.top + window.scrollY;
       const distFromBottom = Math.round(vh - restingTop + 28);
-      if (distFromBottom > 140 && distFromBottom < 480) {
+      if (distFromBottom > 80 && distFromBottom < 520) {
         setMobileBottomInset(distFromBottom);
       }
 
       // Available vertical space between navbar (~68px) and top of hero block
       const navHeight = 68;
-      const availableHeight = Math.max(180, restingTop - navHeight - 16);
+      const availableHeight = Math.max(160, restingTop - navHeight - 16);
       const targetScale = (availableHeight * 0.92) / vh;
+      // Allow scale down to 0.38 so smaller/standard mobile viewports fit cleanly without colliding with navbar
       const clampedScale = Math.max(
-        0.50,
-        Math.min(0.70, Number(targetScale.toFixed(2)))
+        0.38,
+        Math.min(0.68, Number(targetScale.toFixed(2)))
       );
       setMobileCardScale(clampedScale);
     }
@@ -441,7 +442,14 @@ export default function MemberProfile({
     : `mailto:${member.slug}@ceconline.edu`;
 
   return (
-    <main className={styles.page}>
+    <main
+      className={styles.page}
+      style={
+        {
+          "--card-bottom-inset": `${mobileBottomInset}px`,
+        } as React.CSSProperties
+      }
+    >
       {/* ── Top Subtle Hairline Laser ── */}
       <div className={styles.topLightBeam} aria-hidden="true" />
 
@@ -500,7 +508,9 @@ export default function MemberProfile({
         </div>
 
         {/* Foreground Responsive Grid: Left empty anchor for 3D card physics, Right for typography */}
-        <div className={styles.contentGrid}>
+        <div
+          className={`${styles.contentGrid} ${mobileDetailsOpen ? styles.contentGridDetailsOpen : ""}`}
+        >
           <div
             className={`${styles.cardAnchorArea} ${mobileDetailsOpen ? styles.cardAnchorAreaDetailsOpen : ""}`}
             aria-hidden="true"

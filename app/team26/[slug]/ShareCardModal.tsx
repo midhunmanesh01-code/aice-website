@@ -279,6 +279,16 @@ export default function ShareCardModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Lock body scroll when modal is open on mobile / small screens
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
+
   // Light dismiss on clicking modal overlay backdrop
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (modalBoxRef.current && !modalBoxRef.current.contains(e.target as Node)) {
